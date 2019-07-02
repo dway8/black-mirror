@@ -1,0 +1,7 @@
+node_modules/
+db.json
+elm-stuff/
+dist
+server/yarn.lock
+tags
+server/logs/
