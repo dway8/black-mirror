@@ -13,7 +13,7 @@ type alias Model =
     , now : Posix
     , zone : Zone
     , weather : Weather
-    , lastTweet : Maybe Tweet
+    , lastTweet : WebData Tweet
     , saint : String
     , window : Window
     }

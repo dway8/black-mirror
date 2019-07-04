@@ -1,0 +1,66 @@
+{
+    "env": {
+        "node": true,
+        "commonjs": true,
+        "amd": true,
+        "browser": true
+    },
+
+    "parserOptions": {
+        "ecmaVersion": 2018,
+        "sourceType": "module"
+    },
+    "globals": {
+        "define": false,
+        "process": false,
+        "__dirname": false,
+        "console": true,
+        "location": false,
+        "google": false,
+        "Promise": false
+    },
+    "extends": [
+        "eslint:recommended",
+        "prettier"
+    ],
+    "plugins": [ "prettier" ],
+    "rules": {
+        "prettier/prettier": "error",
+        "no-use-before-define": ["error", { "functions": false }],
+        "indent": [
+            "error",
+            4,
+            { "SwitchCase": 1 }
+        ],
+        "linebreak-style": [
+            "error",
+            "unix"
+        ],
+        "semi": [
+            "error",
+            "always"
+        ],
+        "comma-dangle": [
+            "error",
+            "always-multiline"
+        ],
+        "no-console": "off",
+        "quotes": [
+            "error",
+            "double",
+            { "avoidEscape": true }
+        ],
+        "no-warning-comments": [
+          "error",
+          {
+            "terms": [ "fixme" ],
+            "location": "anywhere"
+          }
+        ],
+        "padded-blocks": [
+            "error",
+            "never"
+        ],
+    "eqeqeq": ["error", "always" ]
+    }
+}

@@ -1,6 +1,5 @@
 let path = require("path");
 let merge = require("webpack-merge");
-let webpack = require("webpack");
 
 let prod = "production";
 let dev = "development";
@@ -36,7 +35,7 @@ let commonConfig = {
 // additional webpack settings for local env (when invoked by 'npm start')
 if (isDev === true) {
     console.log("Serving locally...");
-    module.exports = function(env) {
+    module.exports = function() {
         const entry = [
             "webpack-dev-server/client?http://localhost:42424",
             entryPath,
@@ -65,6 +64,13 @@ if (isDev === true) {
                     timings: true,
                     version: false,
                     warnings: true,
+                },
+                proxy: {
+                    "/api": {
+                        target: "http://localhost:" + "42425",
+                        pathRewrite: { "^/api": "" },
+                        proxyTimeout: 5 * 60 * 1000,
+                    },
                 },
             },
 
@@ -115,7 +121,7 @@ if (isDev === true) {
 if (isProd === true) {
     console.log("Building for prod...");
 
-    module.exports = function(env) {
+    module.exports = function() {
         const entry = [
             "webpack-dev-server/client?http://54.36.52.224:42424",
             entryPath,

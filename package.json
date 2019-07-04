@@ -1,0 +1,37 @@
+{
+  "name": "blackmirror",
+  "version": "0.0.1",
+  "description": "Blackmirror",
+  "author": "dway88",
+  "private": true,
+  "scripts": {
+    "install": "cd server && yarn install && cd .. && cd frontend && yarn install && cd .. ",
+    "lint": "cd server && yarn lint && cd .. && cd frontend && yarn lint",
+    "serve": "yarn server:serve",
+    "server:serve": "cd server && yarn serve",
+    "dev": "yarn front:dev",
+    "build": "yarn front:build",
+    "compile": "yarn front:compile",
+    "front:dev": "cd frontend && yarn dev"
+  },
+  "devDependencies": {
+    "eslint": "^5.14.1",
+    "eslint-config-prettier": "^4.0.0",
+    "eslint-plugin-jest": "^22.4.1",
+    "eslint-plugin-prettier": "^3.0.1",
+    "eslint_d": "^5.0.0",
+    "glob": "^5.0.14",
+    "prettier": "^1.16.4",
+    "prettier_d": "^5.7.4",
+    "yadda": "^1.5.0"
+  },
+  "dependencies": {},
+  "prettier": {
+    "tabWidth": 4,
+    "printWidth": 80,
+    "trailingComma": "es5"
+  },
+  "resolutions": {
+    "**/event-stream": "^4.0.1"
+  }
+}

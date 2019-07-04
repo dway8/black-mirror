@@ -26,7 +26,7 @@ init flags =
       , now = Time.millisToPosix flags.now
       , zone = Time.utc
       , weather = initialWeather
-      , lastTweet = Nothing
+      , lastTweet = NotAsked
       , window = flags.viewport
       , saint = ""
       }
@@ -53,10 +53,6 @@ type alias Flags =
     }
 
 
-update msg model =
-    ( model, Cmd.none )
-
-
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
@@ -66,3 +62,23 @@ subscriptions model =
         , Time.every (15 * 60 * 1000) <| always FetchLastTweet
         , Time.every (60 * 60 * 1000) UpdateSaint
         ]
+
+
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
+    case msg of
+        FetchWeatherResponse response ->
+            case response of
+                Success w ->
+                    ( { model | weather = { currently = w.currently } }
+                    , Cmd.none
+                    )
+
+                _ ->
+                    ( model, Cmd.none )
+
+        FetchLastTweetResponse response ->
+            ( { model | lastTweet = response }, Cmd.none )
+
+        _ ->
+            ( model, Cmd.none )

@@ -1,0 +1,23 @@
+{
+  "name": "blackmirror",
+  "version": "0.0.1",
+  "description": "Blackmirror back",
+  "author": "dway88",
+  "private": true,
+  "scripts": {
+    "serve": "nodemon -e js server.js --delay 1 --watch . --watch ../front/dist/",
+    "lint": "eslint_d --fix '**/*.js' '*.js'"
+  },
+  "devDependencies": { },
+  "dependencies": {
+    "body-parser": "^1.18.2",
+    "cors": "^2.8.4",
+    "cron": "^1.7.0",
+    "express": "^4.16.1",
+    "lodash-id": "^0.14.0",
+    "lowdb": "^1.0.0",
+    "nodemon": "^1.18.10",
+    "winston": "^3.2.1",
+    "winston-daily-rotate-file": "^3.8.0"
+  }
+}

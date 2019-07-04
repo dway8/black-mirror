@@ -11,7 +11,7 @@ import FormatNumber.Locales exposing (Locale, frenchLocale)
 import Html exposing (Html)
 import Html.Attributes as HA
 import Model exposing (Model, Msg, MybData, Tweet, Weather, Window)
-import RemoteData exposing (RemoteData(..))
+import RemoteData exposing (RemoteData(..), WebData)
 import Round
 import Style exposing (..)
 import Time exposing (Posix, Zone)
@@ -246,13 +246,10 @@ viewOrders data =
         ]
 
 
-viewTweet : Maybe Tweet -> Element Msg
+viewTweet : WebData Tweet -> Element Msg
 viewTweet tweet =
     case tweet of
-        Nothing ->
-            el [] <| text "..."
-
-        Just t ->
+        Success t ->
             row
                 [ spacing 40, centerY, width fill ]
                 [ case t.media of
@@ -268,6 +265,9 @@ viewTweet tweet =
                         el [] <| html <| Utils.icon "zmdi zmdi-twitter zmdi-hc-5x"
                 , paragraph [ Font.light ] [ text t.text ]
                 ]
+
+        _ ->
+            none
 
 
 getSvgIcon : String -> String
