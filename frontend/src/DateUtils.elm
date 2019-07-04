@@ -1,11 +1,10 @@
-module DateUtils exposing (dateDecoder, dateTimeToShortString, dateTimeToString, dateToShortSlashedString, dateToShortestSlashedString, dateToSlashedString, dateToString, frenchDateFormat, frenchDayName, frenchMonthName, relativeTimeOptions, sortByDateAsc, sortByDateDesc, timeToString)
+module DateUtils exposing (dayAndMonth, dayOfWeek, time)
 
 import DateFormat as DF
 import DateFormat.Language as DFL exposing (english)
 import DateFormat.Relative as DFR
 import Json.Decode as D
 import Time exposing (Month(..), Posix, Weekday(..), Zone)
-import ViewUtils
 
 
 frenchDateFormat : DFL.Language
@@ -81,103 +80,30 @@ frenchMonthName m =
             "décembre"
 
 
-dateToString : Zone -> Posix -> String
-dateToString zone date =
+dayAndMonth : Zone -> Posix -> String
+dayAndMonth zone date =
     DF.formatWithLanguage frenchDateFormat
-        [ DF.dayOfWeekNameFull
-        , DF.text " "
-        , DF.dayOfMonthNumber
-
-        -- , DF.dayOfMonthSuffix
+        [ DF.dayOfMonthNumber
         , DF.text " "
         , DF.monthNameFull
-        , DF.text " "
-        , DF.yearNumber
         ]
         zone
         date
 
 
-dateToShortSlashedString : Zone -> Posix -> String
-dateToShortSlashedString zone date =
+dayOfWeek : Zone -> Posix -> String
+dayOfWeek zone date =
     DF.formatWithLanguage frenchDateFormat
-        [ DF.dayOfMonthFixed
-        , DF.text "/"
-        , DF.monthFixed
-        , DF.text "/"
-        , DF.yearNumberLastTwo
-        ]
+        [ DF.dayOfWeekNameFull ]
         zone
         date
 
 
-dateToShortestSlashedString : Zone -> Posix -> String
-dateToShortestSlashedString zone date =
-    DF.formatWithLanguage frenchDateFormat
-        [ DF.dayOfMonthFixed
-        , DF.text "/"
-        , DF.monthFixed
-        ]
-        zone
-        date
-
-
-dateToSlashedString : Zone -> Posix -> String
-dateToSlashedString zone date =
-    DF.formatWithLanguage frenchDateFormat
-        [ DF.dayOfMonthFixed
-        , DF.text "/"
-        , DF.monthFixed
-        , DF.text "/"
-        , DF.yearNumber
-        ]
-        zone
-        date
-
-
-dateTimeToString : Zone -> Posix -> String
-dateTimeToString zone date =
-    DF.formatWithLanguage frenchDateFormat
-        [ DF.dayOfWeekNameFull
-        , DF.text " "
-        , DF.dayOfMonthNumber
-
-        -- , DF.dayOfMonthSuffix
-        , DF.text " "
-        , DF.monthNameFull
-        , DF.text " "
-        , DF.yearNumber
-        , DF.text " à "
-        , DF.hourMilitaryNumber
-        , DF.text "h"
-        , DF.minuteFixed
-        ]
-        zone
-        date
-
-
-dateTimeToShortString : Zone -> Posix -> String
-dateTimeToShortString zone date =
-    DF.formatWithLanguage frenchDateFormat
-        [ DF.dayOfMonthFixed
-        , DF.text "/"
-        , DF.monthFixed
-        , DF.text "/"
-        , DF.yearNumberLastTwo
-        , DF.text " à "
-        , DF.hourMilitaryNumber
-        , DF.text "h"
-        , DF.minuteFixed
-        ]
-        zone
-        date
-
-
-timeToString : Zone -> Posix -> String
-timeToString zone date =
+time : Zone -> Posix -> String
+time zone date =
     DF.formatWithLanguage frenchDateFormat
         [ DF.hourMilitaryNumber
-        , DF.text "h"
+        , DF.text ":"
         , DF.minuteFixed
         ]
         zone

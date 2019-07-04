@@ -3,7 +3,7 @@ module Main exposing (main)
 import Browser
 import Element exposing (..)
 import Element.Font as Font
-import Model exposing (CurrentWeather, Model, Msg(..), Weather, Window, fetchLastTweet, fetchMybData, fetchWeather)
+import Model exposing (CurrentWeather, Model, Msg(..), Weather, Window, fetchLastTweet, fetchMybData, fetchWeather, getTimeNow)
 import RemoteData exposing (RemoteData(..))
 import Task
 import Time exposing (Posix)
@@ -24,12 +24,13 @@ init : Flags -> ( Model, Cmd Msg )
 init flags =
     ( { mybData = NotAsked
       , now = Time.millisToPosix flags.now
+      , zone = Time.utc
       , weather = initialWeather
       , lastTweet = Nothing
       , window = flags.viewport
       , saint = ""
       }
-    , Cmd.batch [ Task.perform UpdateDateTime Time.now, fetchWeather, fetchLastTweet, Task.perform InitSaint Time.now ]
+    , Cmd.batch [ getTimeNow, fetchWeather, fetchLastTweet, Task.perform InitSaint Time.now ]
     )
 
 
@@ -60,7 +61,7 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ Time.every (10 * 1000) <| always FetchMybData
-        , Time.every (60 * 1000) UpdateDateTime
+        , Time.every (60 * 1000) (\time -> UpdateTime ( time, model.zone ))
         , Time.every (15 * 60 * 1000) <| always FetchWeather
         , Time.every (15 * 60 * 1000) <| always FetchLastTweet
         , Time.every (60 * 60 * 1000) UpdateSaint

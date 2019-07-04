@@ -1,16 +1,17 @@
-module Model exposing (CurrentWeather, ImageSize, Media, Model, Msg(..), MybData, Tweet, Weather, Window, fetchLastTweet, fetchMybData, fetchWeather)
+module Model exposing (CurrentWeather, ImageSize, Media, Model, Msg(..), MybData, Tweet, Weather, Window, fetchLastTweet, fetchMybData, fetchWeather, getTimeNow)
 
 import Http
 import Json.Decode as D
 import Json.Decode.Pipeline as P
 import RemoteData exposing (RemoteData(..), WebData)
 import Task exposing (Task)
-import Time exposing (Posix)
+import Time exposing (Posix, Zone)
 
 
 type alias Model =
     { mybData : WebData MybData
     , now : Posix
+    , zone : Zone
     , weather : Weather
     , lastTweet : Maybe Tweet
     , saint : String
@@ -75,7 +76,7 @@ type alias MybData =
 type Msg
     = NoOp
     | FetchMybData
-    | UpdateDateTime Posix
+    | UpdateTime ( Posix, Zone )
     | FetchMybDataResponse (WebData MybData)
     | FetchWeather
     | FetchWeatherResponse (WebData Weather)
@@ -83,6 +84,12 @@ type Msg
     | FetchLastTweetResponse (WebData Tweet)
     | UpdateSaint Posix
     | InitSaint Posix
+
+
+getTimeNow : Cmd Msg
+getTimeNow =
+    Task.map2 (\time zone -> ( time, zone )) Time.now Time.here
+        |> Task.perform UpdateTime
 
 
 fetchWeather : Cmd Msg

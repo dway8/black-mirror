@@ -1,15 +1,20 @@
 module View exposing (view)
 
 import Browser exposing (Document)
+import DateUtils
 import Element exposing (..)
+import Element.Background as Background
+import Element.Border as Border
 import Element.Font as Font
 import FormatNumber as FN
 import FormatNumber.Locales exposing (Locale, frenchLocale)
 import Html exposing (Html)
-import Model exposing (Model, Msg, MybData, Tweet, Weather)
+import Html.Attributes as HA
+import Model exposing (Model, Msg, MybData, Tweet, Weather, Window)
 import RemoteData exposing (RemoteData(..))
 import Round
-import Time exposing (Posix)
+import Style exposing (..)
+import Time exposing (Posix, Zone)
 import Utils
 
 
@@ -29,27 +34,32 @@ view model =
                 , width fill
                 , clipX
                 , clipY
+                , Background.color blackColor
+                , Font.color whiteColor
                 ]
             <|
-                case model.mybData of
-                    Success data ->
-                        column
-                            [ spacingXY 0
-                                (if Utils.isBigPortrait model.window then
-                                    200
+                column
+                    [ spacingXY 0
+                        (if Utils.isBigPortrait model.window then
+                            200
 
-                                 else
-                                    30
-                                )
-                            ]
-                            [ viewHeader model
-                            , viewCountsMybData data
-                            , viewMoneyMybData data model.device
-                            , viewTweet model.lastTweet
-                            ]
+                         else
+                            30
+                        )
+                    ]
+                    (viewHeader model
+                        :: (case model.mybData of
+                                Success data ->
+                                    [ viewCountsMybData data
+                                    , viewMoneyMybData data model.window
+                                    ]
 
-                    _ ->
-                        text "Chargement..."
+                                _ ->
+                                    [ text "Chargement..." ]
+                           )
+                        ++ [ viewTweet model.lastTweet
+                           ]
+                    )
     }
 
 
@@ -59,12 +69,12 @@ viewHeader model =
         [ width fill, spaceEvenly ]
         [ column
             [ alignLeft, spacing 80 ]
-            [ viewDate model.datetime
+            [ viewDate model.zone model.now
             , viewSaint model.saint
             ]
         , column
             [ alignRight ]
-            [ viewTime model.datetime
+            [ viewTime model.zone model.now
             , row
                 [ centerY ]
                 [ el [ Font.bold ] <| text (Round.round 1 model.weather.currently.temperature ++ "°")
@@ -74,12 +84,12 @@ viewHeader model =
         ]
 
 
-viewDate : Posix -> Element Msg
-viewDate now =
+viewDate : Zone -> Posix -> Element Msg
+viewDate zone now =
     column
         []
-        [ el [ Font.bold ] <| text (ucfirst (Utils.dayOfWeek d))
-        , el [ Font.light ] <| text <| Utils.dayAndMonth d
+        [ el [ Font.bold ] <| text (Utils.ucfirst (DateUtils.dayOfWeek zone now))
+        , el [ Font.light ] <| text <| DateUtils.dayAndMonth zone now
         ]
 
 
@@ -92,29 +102,29 @@ viewSaint saint =
         ]
 
 
-viewTime : Posix -> Element Msg
-viewTime now =
-    el [ Font.light ] <| text <| timeToStringFr now
+viewTime : Zone -> Posix -> Element Msg
+viewTime zone now =
+    el [ Font.light ] <| text <| DateUtils.time zone now
 
 
 viewWeatherIcon : String -> Element Msg
 viewWeatherIcon icon =
-    image WeatherIcon [ paddingLeft 5 ] { src = getSvgIcon icon, caption = "" }
+    image [ paddingEach { left = 5, right = 0, top = 0, bottom = 0 } ] { src = getSvgIcon icon, description = "" }
 
 
 viewCountsMybData : MybData -> Element Msg
 viewCountsMybData data =
     row
         []
-        [ el [ width <| percent 50, center ] <|
+        [ el [ width fill, centerX, centerY ] <|
             column
                 [ spacing 50 ]
                 [ viewUsers data
                 , viewOrders data
                 ]
-        , el Border [ vary Left True, width <| percent 50, center ] <|
+        , el [ Border.widthEach { left = 1, top = 0, bottom = 0, right = 0 }, Border.solid, width fill, centerX, centerY ] <|
             column
-                [ spacing 50, paddingLeft 55 ]
+                [ spacing 50, paddingEach { left = 55, top = 0, bottom = 0, right = 0 } ]
                 [ viewProdEvents data
                 , viewAds data
                 ]
@@ -125,17 +135,17 @@ viewProdEvents : MybData -> Element Msg
 viewProdEvents data =
     row
         [ spacing 30, centerY, width fill ]
-        [ el [ width <| fillPortion 1, vary Largest True, vary Bold True ] <| el [ alignRight ] <| text (toString data.prodEvents)
+        [ el [ width <| fillPortion 1, Font.size 50, Font.bold ] <| el [ alignRight ] <| text (String.fromInt data.prodEvents)
         , el [ width <| fillPortion 2 ] <|
             column
                 []
-                [ el [ vary Large True, vary Bold True ] <|
+                [ el [ Font.size 40, Font.bold ] <|
                     (data.totalEvents
                         |> toFloat
                         |> FN.format { frenchLocale | decimals = 0 }
                         |> text
                     )
-                , el [ vary Light True ] <| text "Prod"
+                , el [ Font.light ] <| text "Prod"
                 ]
         ]
 
@@ -143,39 +153,39 @@ viewProdEvents data =
 viewAds : MybData -> Element Msg
 viewAds data =
     row
-        [ spacing 30, verticalCenter, width fill ]
-        [ el [ width <| fillPortion 1, vary Largest True, vary Bold True ] <| el [ alignRight ] <| text ("+" ++ toString data.todayAds)
+        [ spacing 30, centerY, width fill ]
+        [ el [ width <| fillPortion 1, Font.size 50, Font.bold ] <| el [ alignRight ] <| text ("+" ++ String.fromInt data.todayAds)
         , el [ width <| fillPortion 2 ] <|
             column
                 []
-                [ el [ vary Large True, vary Bold True ] <|
+                [ el [ Font.size 40, Font.bold ] <|
                     (data.ads
                         |> toFloat
                         |> FN.format { frenchLocale | decimals = 0 }
                         |> text
                     )
-                , el [ vary Light True ] <| text "Annonces"
+                , el [ Font.light ] <| text "Annonces"
                 ]
         ]
 
 
-viewMoneyMybData : MybData -> Device -> Element Msg
-viewMoneyMybData data device =
-    el [ center ] <|
+viewMoneyMybData : MybData -> Window -> Element Msg
+viewMoneyMybData data window =
+    el [ centerX, centerY ] <|
         row
             [ spacing
-                (if isBigPortrait device then
+                (if Utils.isBigPortrait window then
                     100
 
                  else
                     40
                 )
             ]
-            [ el [ vary Large True ] <| html <| icon "zmdi zmdi-shopping-cart zmdi-hc-4x"
+            [ el [ Font.size 40 ] <| html <| Utils.icon "zmdi zmdi-shopping-cart zmdi-hc-4x"
             , el [] <|
                 column
                     [ spacing 15 ]
-                    [ el [ vary Larger True, vary Bold True ] <|
+                    [ el [ Font.size 50, Font.bold ] <|
                         (data.va
                             |> toFloat
                             |> (\i -> i / 100)
@@ -185,11 +195,11 @@ viewMoneyMybData data device =
                         )
                     , el [] <|
                         row
-                            [ spacing 40, verticalCenter ]
-                            [ el [ vary Large True ] <| html <| icon "zmdi zmdi-shopping-basket zmdi-hc-lg"
-                            , el [ vary Larger True, vary Light True ] <|
+                            [ spacing 40, centerY ]
+                            [ el [ Font.size 40 ] <| html <| Utils.icon "zmdi zmdi-shopping-basket zmdi-hc-lg"
+                            , el [ Font.size 45, Font.light ] <|
                                 (data.avgCart
-                                    |> toString
+                                    |> String.fromInt
                                     |> (\a -> (++) a " €")
                                     |> text
                                 )
@@ -201,12 +211,12 @@ viewMoneyMybData data device =
 viewUsers : MybData -> Element Msg
 viewUsers data =
     row
-        [ spacing 30, verticalCenter, width fill ]
-        [ el [ width <| fillPortion 1, vary Largest True, vary Bold True ] <| el [ alignRight ] <| text ("+" ++ toString data.todayUsers)
+        [ spacing 30, centerY, width fill ]
+        [ el [ width <| fillPortion 1, Font.size 50, Font.bold ] <| el [ alignRight ] <| text ("+" ++ String.fromInt data.todayUsers)
         , el [ width <| fillPortion 2 ] <|
             column
                 []
-                [ el [ vary Large True, Font.bold ] <|
+                [ el [ Font.size 40, Font.bold ] <|
                     (data.countUsers
                         |> toFloat
                         |> FN.format { frenchLocale | decimals = 0 }
@@ -220,12 +230,12 @@ viewUsers data =
 viewOrders : MybData -> Element Msg
 viewOrders data =
     row
-        [ spacing 30, verticalCenter, width fill ]
-        [ el [ width <| fillPortion 1, vary Largest True, vary Bold True ] <| el [ alignRight ] <| text ("+" ++ toString data.todayOrders)
+        [ spacing 30, centerY, width fill ]
+        [ el [ width <| fillPortion 1, Font.size 50, Font.bold ] <| el [ alignRight ] <| text ("+" ++ String.fromInt data.todayOrders)
         , el [ width <| fillPortion 2 ] <|
             column
                 []
-                [ el [ vary Large True, Font.bold ] <|
+                [ el [ Font.size 40, Font.bold ] <|
                     (data.countOrders
                         |> toFloat
                         |> FN.format { frenchLocale | decimals = 0 }
@@ -248,13 +258,15 @@ viewTweet tweet =
                 [ case t.media of
                     photo :: [] ->
                         el [] <|
-                            decorativeImage
-                                [ inlineStyle [ ( "width", toString (photo.size.width * 0.5) ++ "px" ), ( "height", toString (photo.size.height * 0.5) ++ "px" ) ] ]
-                                { src = photo.mediaUrl }
+                            image
+                                [ width <| px (round (photo.size.width * 0.5))
+                                , height <| px (round (photo.size.height * 0.5))
+                                ]
+                                { src = photo.mediaUrl, description = "" }
 
                     _ ->
-                        el [] <| html <| icon "zmdi zmdi-twitter zmdi-hc-5x"
-                , textLayout [ Font.light ] [ paragraph [] [ text t.text ] ]
+                        el [] <| html <| Utils.icon "zmdi zmdi-twitter zmdi-hc-5x"
+                , paragraph [ Font.light ] [ text t.text ]
                 ]
 
 

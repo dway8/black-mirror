@@ -1,49 +1,10 @@
-module Utils exposing (dateFromJS, dayAndMonth, dayOfWeek, formatConfigFrench, formatFrench, getAt, icon, isBigPortrait, styledIcon, timeToStringFr, ucfirst)
+module Utils exposing (getAt, icon, isBigPortrait, styledIcon, ucfirst)
 
 import Char
-import Date.Extra.Config as DEC
-import Date.Extra.Config.Config_fr_fr as DECFR
-import Date.Extra.Format as DEF
 import Element as E
 import Html exposing (Html, i)
 import Html.Attributes exposing (..)
-
-
-dayAndMonth : Posix -> String
-dayAndMonth date =
-    formatFrench
-        "%e %B"
-        date
-
-
-timeToStringFr : Posix -> String
-timeToStringFr date =
-    formatFrench
-        "%-H:%M"
-        date
-
-
-dayOfWeek : Date -> String
-dayOfWeek date =
-    formatFrench
-        "%A"
-        date
-
-
-dateFromJS : Float -> Date
-dateFromJS epoch =
-    Date.fromTime (epoch * 1000)
-
-
-formatFrench : String -> Date -> String
-formatFrench format date =
-    DEF.format formatConfigFrench format date
-        |> String.toLower
-
-
-formatConfigFrench : DEC.Config
-formatConfigFrench =
-    DECFR.config
+import Model exposing (Window)
 
 
 ucfirst : String -> String
@@ -63,7 +24,13 @@ icon str =
 
 styledIcon : List ( String, String ) -> String -> Html a
 styledIcon styles str =
-    i [ class str, attribute "aria-hidden" "true", style styles ] []
+    i
+        ([ class str
+         , attribute "aria-hidden" "true"
+         ]
+            ++ (styles |> List.map (\tuple -> style (Tuple.first tuple) (Tuple.second tuple)))
+        )
+        []
 
 
 isBigPortrait : Window -> Bool
