@@ -39,13 +39,9 @@ view model =
                 ]
             <|
                 column
-                    [ spacingXY 0
-                        (if Utils.isBigPortrait model.window then
-                            200
-
-                         else
-                            30
-                        )
+                    [ width fill
+                    , height fill
+                    , spaceEvenly
                     ]
                     (viewHeader model
                         :: (case model.mybData of
@@ -64,32 +60,32 @@ view model =
 
 
 viewHeader : Model -> Element Msg
-viewHeader model =
+viewHeader { zone, now, window, saint, weather } =
     row
-        [ width fill, spaceEvenly ]
+        [ width fill, spaceEvenly, alignTop ]
         [ column
-            [ alignLeft, spacing 80 ]
-            [ viewDate model.zone model.now
-            , viewSaint model.saint
+            [ alignLeft, spacing 80, alignTop ]
+            [ viewDate window zone now
+            , viewSaint saint
             ]
         , column
-            [ alignRight ]
-            [ viewTime model.zone model.now
+            [ alignRight, alignTop ]
+            [ viewTime zone now
             , row
                 [ centerY ]
-                [ el [ Font.bold ] <| text (Round.round 1 model.weather.currently.temperature ++ "°")
-                , viewWeatherIcon model.weather.currently.icon
+                [ el [ Font.bold ] <| text (Round.round 1 weather.currently.temperature ++ "°")
+                , viewWeatherIcon weather.currently.icon
                 ]
             ]
         ]
 
 
-viewDate : Zone -> Posix -> Element Msg
-viewDate zone now =
+viewDate : Window -> Zone -> Posix -> Element Msg
+viewDate window zone now =
     column
-        []
-        [ el [ Font.bold ] <| text (Utils.ucfirst (DateUtils.dayOfWeek zone now))
-        , el [ Font.light ] <| text <| DateUtils.dayAndMonth zone now
+        [ spacing (windowRatio window 10) ]
+        [ el [ Font.bold, Font.size (size1 window) ] <| text (Utils.ucfirst (DateUtils.dayOfWeek zone now))
+        , el [ Font.light, Font.size (size2 window) ] <| text <| DateUtils.dayAndMonth zone now
         ]
 
 
