@@ -36,13 +36,8 @@ let commonConfig = {
 if (isDev === true) {
     console.log("Serving locally...");
     module.exports = function() {
-        const entry = [
-            "webpack-dev-server/client?http://localhost:42424",
-            entryPath,
-        ];
-
         return merge(commonConfig, {
-            entry: entry,
+            entry: entryPath,
             devServer: {
                 contentBase: [".", "./static", "./assets"],
                 headers: {
@@ -122,14 +117,8 @@ if (isProd === true) {
     console.log("Building for prod...");
 
     module.exports = function() {
-        const entry = [
-            // "webpack-dev-server/client?http://54.36.52.224:42424",
-            "webpack-dev-server/client?http://localhost:42424",
-            entryPath,
-        ];
-
         return merge(commonConfig, {
-            entry: entry,
+            entry: entryPath,
 
             module: {
                 rules: [
