@@ -80,7 +80,7 @@ type Msg
     | FetchLastTweet
     | FetchLastTweetResponse (WebData Tweet)
     | UpdateSaint Posix
-    | InitSaint Posix
+    | InitSaint ( Posix, Zone )
 
 
 getTimeNow : Cmd Msg

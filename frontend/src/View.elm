@@ -70,7 +70,7 @@ viewHeader { zone, now, window, saint, weather } =
             ]
         , row
             [ width fill, spaceEvenly ]
-            [ viewSaint saint
+            [ viewSaint window saint
             , row
                 [ centerY, Font.size (windowRatio window 60), alignRight ]
                 [ el [ Font.bold ] <| text (Round.round 1 weather.currently.temperature ++ "°")
@@ -94,10 +94,10 @@ viewTime window zone now =
     el [ Font.light, Font.size (windowRatio window 90), alignRight ] <| text <| DateUtils.time zone now
 
 
-viewSaint : String -> Element Msg
-viewSaint saint =
+viewSaint : Window -> String -> Element Msg
+viewSaint window saint =
     row
-        [ spacing 30, Font.bold ]
+        [ spacing 30, Font.bold, Font.size (windowRatio window 24) ]
         [ el [] <| html <| Utils.icon "zmdi zmdi-chevron-right zmdi-hc-lg"
         , el [] <| text saint
         ]

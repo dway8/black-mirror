@@ -3,10 +3,11 @@ module Main exposing (main)
 import Browser
 import Element exposing (..)
 import Element.Font as Font
+import Ephemeris
 import Model exposing (CurrentWeather, Model, Msg(..), Weather, Window, fetchLastTweet, fetchMybData, fetchWeather, getTimeNow)
 import RemoteData exposing (RemoteData(..))
 import Task
-import Time exposing (Posix)
+import Time exposing (Posix, Zone)
 import View
 
 
@@ -30,7 +31,14 @@ init flags =
       , window = flags.viewport
       , saint = ""
       }
-    , Cmd.batch [ fetchMybData, getTimeNow, fetchWeather, fetchLastTweet, Task.perform InitSaint Time.now ]
+    , Cmd.batch
+        [ fetchMybData
+        , getTimeNow
+        , fetchWeather
+        , fetchLastTweet
+        , Task.map2 (\time zone -> ( time, zone )) Time.now Time.here
+            |> Task.perform InitSaint
+        ]
     )
 
 
@@ -83,5 +91,27 @@ update msg model =
         FetchMybDataResponse response ->
             ( { model | mybData = response }, Cmd.none )
 
+        InitSaint ( now, zone ) ->
+            let
+                newSaint =
+                    getNewSaint zone now |> Maybe.withDefault model.saint
+            in
+            ( { model | saint = newSaint }
+            , Cmd.none
+            )
+
         _ ->
             ( model, Cmd.none )
+
+
+getNewSaint : Zone -> Posix -> Maybe String
+getNewSaint zone now =
+    Ephemeris.getDaySaint zone now
+        |> Maybe.map
+            (\( name, prefix ) ->
+                if prefix == "" then
+                    name
+
+                else
+                    prefix ++ " " ++ name
+            )
