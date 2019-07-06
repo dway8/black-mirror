@@ -20,12 +20,12 @@
     "eslint_d": "^5.0.0",
     "glob": "^5.0.14",
     "prettier": "^1.16.4",
-    "webpack": "^4.10.2",
-    "webpack-cli": "^3.1.2",
-    "webpack-dev-server": "^3.1.4",
-    "webpack-merge": "^4.1.2"
+    "webpack-dev-server": "^3.1.4"
   },
   "dependencies": {
+    "webpack": "^4.10.2",
+    "webpack-merge": "^4.1.2",
+    "webpack-cli": "^3.1.2"
   },
   "prettier": {
     "tabWidth": 4,
