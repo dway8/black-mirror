@@ -12,7 +12,8 @@
     "dev": "yarn front:dev",
     "build": "yarn front:build",
     "compile": "yarn front:compile",
-    "front:dev": "cd frontend && yarn dev"
+    "front:dev": "cd frontend && yarn dev",
+    "front:build": "cd frontend && yarn build"
   },
   "devDependencies": {
     "eslint": "^5.14.1",
@@ -25,7 +26,9 @@
     "prettier_d": "^5.7.4",
     "yadda": "^1.5.0"
   },
-  "dependencies": {},
+  "dependencies": {
+    "http-server": "^0.11.1"
+  },
   "prettier": {
     "tabWidth": 4,
     "printWidth": 80,
@@ -33,5 +36,8 @@
   },
   "resolutions": {
     "**/event-stream": "^4.0.1"
+  },
+  "engines": {
+    "node": "10.x"
   }
 }

@@ -11,7 +11,7 @@ let isProd = TARGET_ENV === prod;
 
 let entryPath = path.join(__dirname, "./static/index.js");
 let outputPath = path.resolve(__dirname + "/dist");
-let outputFilename = "appblackmirror.js";
+let outputFilename = "app.js";
 
 console.log(`WEBPACK GO! Building for ${TARGET_ENV}`);
 
@@ -123,7 +123,8 @@ if (isProd === true) {
 
     module.exports = function() {
         const entry = [
-            "webpack-dev-server/client?http://54.36.52.224:42424",
+            // "webpack-dev-server/client?http://54.36.52.224:42424",
+            "webpack-dev-server/client?http://localhost:42424",
             entryPath,
         ];
 

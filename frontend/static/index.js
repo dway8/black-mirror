@@ -1,7 +1,6 @@
 "use strict";
 
 var { Elm } = require("../src/Main.elm");
-// var ephemeris = require('../elm/libs/ephemeris.js');
 var node = document.getElementById("content");
 
 var now = new Date().getTime();
