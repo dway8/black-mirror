@@ -1,1 +1,1 @@
-web: yarn http-server -p 42424
+web: yarn http-server -p $PORT
