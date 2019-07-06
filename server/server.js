@@ -14,7 +14,6 @@ const db = low(adapter);
 //
 // Constants
 const PORT = 42425;
-const HOST = "0.0.0.0";
 
 db._.mixin(lodashId);
 const bodyParser = require("body-parser");
@@ -55,16 +54,16 @@ app.use(forceReadDB);
 app.post("/mmi", (req, res) => {
     res.json({ message: "OK" });
     var params = req.body;
-    winston.verbose("Received params:", params);
+    winston.verbose("Received params from MYB", params);
 
     if (params.new_user) {
-        handleNewUser(params);
+        handleNewUser();
     } else if (params.new_order && params.amount) {
         handleNewOrder(params);
     } else if (params.order_cancelled && params.amount) {
         handleOrderCancelled(params);
     } else if (params.prod_event) {
-        handleProdEvent(params);
+        handleProdEvent();
     }
 });
 
@@ -126,115 +125,57 @@ app.listen(PORT, function() {
 // MYB DATA //////////////
 //////////////////////////
 
-function handleNewUser(params) {
-    const currentRow = getCurrentMybData();
-    var newData = {
-        countUsers: currentRow.countUsers + parseInt(params.new_user),
-    };
+function handleNewUser() {
+    const currentMybData = _.cloneDeep(getCurrentMybData());
 
-    if (isToday(currentRow)) {
-        newData.todayUsers = currentRow.todayUsers + 1;
-        updateTodayData(newData, currentRow.id);
-    } else {
-        winston.verbose("No insertion yet for today");
-        newData.countOrders = currentRow.countOrders;
-        newData.totalEvents = currentRow.totalEvents;
-        newData.va = currentRow.va;
-        newData.avgCart = currentRow.avgCart;
-        newData.ads = currentRow.ads;
-        newData.todayUsers = 1;
-        insertNewData(newData);
-    }
+    const totalUsers = currentMybData.totalUsers + 1;
+    const todayUsers = currentMybData.todayUsers + 1;
+
+    updateTodayMybData({ totalUsers, todayUsers }, currentMybData.id);
 }
 
 function handleNewOrder(params) {
-    const currentRow = getCurrentMybData();
+    const currentMybData = _.cloneDeep(getCurrentMybData());
 
-    const newCountOrders = currentRow.countOrders + 1;
-    const newVa = currentRow.va + parseFloat(params.amount);
-    const newAvgCart = Math.round(newVa / 100 / newCountOrders);
-    const newData = {
-        countOrders: newCountOrders,
-        va: newVa,
-        avgCart: newAvgCart,
-    };
+    const totalOrders = currentMybData.totalOrders + 1;
+    const va = currentMybData.va + parseFloat(params.amount);
+    const avgCart = Math.round(va / 100 / totalOrders);
+    const todayOrders = currentMybData.todayOrders + 1;
 
-    if (isToday(currentRow)) {
-        newData.todayOrders = currentRow.todayOrders + 1;
-        updateTodayData(newData, currentRow.id);
-    } else {
-        winston.verbose("no insertion yet for today");
-        newData.countUsers = currentRow.countUsers;
-        newData.totalEvents = currentRow.totalEvents;
-        newData.ads = currentRow.ads;
-        newData.todayOrders = 1;
-        insertNewData(newData);
-    }
+    updateTodayMybData(
+        { totalOrders, todayOrders, va, avgCart },
+        currentMybData.id
+    );
 }
 
 function handleOrderCancelled(params) {
-    const currentRow = getCurrentMybData();
+    const currentMybData = _.cloneDeep(getCurrentMybData());
 
-    const newCountOrders = currentRow.countOrders - 1;
-    const newVa = currentRow.va - parseFloat(params.amount);
-    const newAvgCart = Math.round(newVa / 100 / newCountOrders);
-    const newData = {
-        countOrders: newCountOrders,
-        va: newVa,
-        avgCart: newAvgCart,
-    };
+    const totalOrders = currentMybData.totalOrders - 1;
+    const va = currentMybData.va - parseFloat(params.amount);
+    const avgCart = Math.round(va / 100 / totalOrders);
 
-    if (isToday(currentRow)) {
-        let newTodayOrders = currentRow.todayOrders;
-        const orderDate = new Date(params.date * 1000);
-        if (orderDate >= getTodayMidnight()) {
-            newTodayOrders = currentRow.todayOrders - 1;
-        }
-        newData.todayOrders = newTodayOrders;
-
-        updateTodayData(newData, currentRow.id);
-    } else {
-        winston.verbose("No insertion yet for today");
-        newData.countUsers = currentRow.countUsers;
-        newData.totalEvents = currentRow.totalEvents;
-        newData.ads = currentRow.ads;
-        newData.todayOrders = 0;
-        insertNewData(newData);
+    let todayOrders = currentMybData.todayOrders;
+    const orderDate = new Date(params.date * 1000);
+    if (orderDate >= getTodayMidnight()) {
+        todayOrders = currentMybData.todayOrders - 1;
     }
+
+    updateTodayMybData(
+        { totalOrders, todayOrders, va, avgCart },
+        currentMybData.id
+    );
 }
 
-function handleProdEvent(params) {
-    const currentRow = getCurrentMybData();
+function handleProdEvent() {
+    const currentMybData = _.cloneDeep(getCurrentMybData());
 
-    const newTotalEvents = currentRow.totalEvents + parseInt(params.prod_event);
-    const newData = {
-        totalEvents: newTotalEvents,
-    };
+    const totalProdEvents = currentMybData.totalProdEvents + 1;
 
-    if (isToday(currentRow)) {
-        newData.prodEvents =
-            currentRow.prodEvents + parseInt(params.prod_event);
-        updateTodayData(newData, currentRow.id);
-    } else {
-        winston.verbose("No insertion yet for today");
-        // no insertion yet for today
-        newData.countUsers = currentRow.countUsers;
-        newData.countOrders = currentRow.countOrders;
-        newData.va = currentRow.va;
-        newData.avgCart = currentRow.avgCart;
-        newData.ads = currentRow.ads;
-        insertNewData(newData);
-    }
+    updateTodayMybData({ totalProdEvents }, currentMybData.id);
 }
 
 // HELPERS
-
-function isToday(row) {
-    const today = getTodayMidnight();
-    const currentRowDate = new Date(row.createdAt).setHours(0, 0, 0, 0);
-
-    return currentRowDate >= today;
-}
 
 function getTodayMidnight() {
     return new Date().setHours(0, 0, 0, 0);
@@ -243,41 +184,65 @@ function getTodayMidnight() {
 // DB
 
 function getCurrentMybData() {
-    return db.get("myb_data").value()[0];
+    const rows = db
+        .get("myb_data")
+        .orderBy(["date"], ["desc"])
+        .value();
+
+    let mybData;
+
+    if (rows.length === 0) {
+        mybData = db
+            .get("myb_data")
+            .insert({
+                totalUsers: 0,
+                todayUsers: 0,
+                totalOrders: 0,
+                todayOrders: 0,
+                va: 0,
+                avgCart: 0,
+                totalProdEvents: 0,
+                date: getTodayMidnight(),
+            })
+            .write();
+    } else {
+        mybData = rows[0];
+    }
+    return mybData;
 }
-function updateTodayData(newData, id) {
-    winston.verbose("Updating today MYB data", { newData });
+function updateTodayMybData(newData, id) {
+    winston.verbose("Updating today MYB data with", newData);
     db.get("myb_data")
         .getById(id)
         .assign(newData)
         .write();
 }
 
-function insertNewData(newData) {
-    winston.verbose("Inserting new row in MYB data", { newData });
-    db.get("myb_data")
-        .insert(newData)
-        .write();
-}
-
-function resetDayData() {
-    let currentRow = db.get("myb_data").value()[0];
-    let yesterdayData = _.cloneDeep(currentRow);
-    delete yesterdayData.createdAt;
-    let newData = yesterdayData;
-    newData.todayOrders = 0;
-    newData.todayUsers = 0;
-    newData.todayAds = 0;
-    insertNewData(newData);
-}
 // CRON
 
 const resetDataCron = new CronJob("00 00 00 * * *", () => {
     winston.verbose("Resetting day data");
     try {
-        resetDayData();
+        resetDayMybData();
     } catch (e) {
         winston.error("Error when resetting day data", { e });
     }
 });
 resetDataCron.start();
+
+function resetDayMybData() {
+    let yesterdayMybData = _.cloneDeep(getCurrentMybData());
+
+    let newData = {
+        ...yesterdayMybData,
+        todayOrders: 0,
+        todayUsers: 0,
+        date: getTodayMidnight(),
+    };
+    delete newData.id;
+
+    winston.verbose("Inserting new row in MYB data", newData);
+    db.get("myb_data")
+        .insert(newData)
+        .write();
+}
