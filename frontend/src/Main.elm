@@ -30,7 +30,7 @@ init flags =
       , window = flags.viewport
       , saint = ""
       }
-    , Cmd.batch [ getTimeNow, fetchWeather, fetchLastTweet, Task.perform InitSaint Time.now ]
+    , Cmd.batch [ fetchMybData, getTimeNow, fetchWeather, fetchLastTweet, Task.perform InitSaint Time.now ]
     )
 
 
@@ -79,6 +79,9 @@ update msg model =
 
         FetchLastTweetResponse response ->
             ( { model | lastTweet = response }, Cmd.none )
+
+        FetchMybDataResponse response ->
+            ( { model | mybData = response }, Cmd.none )
 
         _ ->
             ( model, Cmd.none )

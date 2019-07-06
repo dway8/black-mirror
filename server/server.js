@@ -118,6 +118,11 @@ app.get("/last_tweet", (req, res) => {
     );
 });
 
+app.get("/myb_data", (req, res) => {
+    const mybData = getCurrentMybData();
+    res.json(mybData);
+});
+
 app.listen(PORT, function() {
     console.log(`Listening on port ${PORT}!`);
 });

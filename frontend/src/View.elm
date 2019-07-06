@@ -121,47 +121,22 @@ viewCountsMybData data =
         , el [ Border.widthEach { left = 1, top = 0, bottom = 0, right = 0 }, Border.solid, width fill, centerX, centerY ] <|
             column
                 [ spacing 50, paddingEach { left = 55, top = 0, bottom = 0, right = 0 } ]
-                [ viewProdEvents data
-                , viewAds data
+                [ viewTotalProdEvents data
                 ]
         ]
 
 
-viewProdEvents : MybData -> Element Msg
-viewProdEvents data =
-    row
-        [ spacing 30, centerY, width fill ]
-        [ el [ width <| fillPortion 1, Font.size 50, Font.bold ] <| el [ alignRight ] <| text (String.fromInt data.prodEvents)
-        , el [ width <| fillPortion 2 ] <|
-            column
-                []
-                [ el [ Font.size 40, Font.bold ] <|
-                    (data.totalEvents
-                        |> toFloat
-                        |> FN.format { frenchLocale | decimals = 0 }
-                        |> text
-                    )
-                , el [ Font.light ] <| text "Prod"
-                ]
-        ]
-
-
-viewAds : MybData -> Element Msg
-viewAds data =
-    row
-        [ spacing 30, centerY, width fill ]
-        [ el [ width <| fillPortion 1, Font.size 50, Font.bold ] <| el [ alignRight ] <| text ("+" ++ String.fromInt data.todayAds)
-        , el [ width <| fillPortion 2 ] <|
-            column
-                []
-                [ el [ Font.size 40, Font.bold ] <|
-                    (data.ads
-                        |> toFloat
-                        |> FN.format { frenchLocale | decimals = 0 }
-                        |> text
-                    )
-                , el [ Font.light ] <| text "Annonces"
-                ]
+viewTotalProdEvents : MybData -> Element Msg
+viewTotalProdEvents data =
+    column
+        []
+        [ el [ Font.size 40, Font.bold ] <|
+            (data.totalProdEvents
+                |> toFloat
+                |> FN.format { frenchLocale | decimals = 0 }
+                |> text
+            )
+        , el [ Font.light ] <| text "Prod"
         ]
 
 
@@ -212,7 +187,7 @@ viewUsers data =
             column
                 []
                 [ el [ Font.size 40, Font.bold ] <|
-                    (data.countUsers
+                    (data.totalUsers
                         |> toFloat
                         |> FN.format { frenchLocale | decimals = 0 }
                         |> text
@@ -231,7 +206,7 @@ viewOrders data =
             column
                 []
                 [ el [ Font.size 40, Font.bold ] <|
-                    (data.countOrders
+                    (data.totalOrders
                         |> toFloat
                         |> FN.format { frenchLocale | decimals = 0 }
                         |> text

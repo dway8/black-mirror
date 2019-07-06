@@ -15,22 +15,21 @@ var app = Elm.Main.init({
 });
 
 app.ports.infoForOutside.subscribe(function(elmData) {
-    var tag = elmData.tag;
+    let tag = elmData.tag;
+    let audio;
     switch (tag) {
         case "playCashRegister":
-            var audio = new Audio(
+            audio = new Audio(
                 "http://54.36.52.224:42424/sounds/cashregister.mp3"
             );
             audio.play();
             break;
         case "playFanfare":
-            var audio = new Audio(
-                "http://54.36.52.224:42424/sounds/fanfare.wav"
-            );
+            audio = new Audio("http://54.36.52.224:42424/sounds/fanfare.wav");
             audio.play();
             break;
         case "playKnock":
-            var audio = new Audio("http://54.36.52.224:42424/sounds/knock.wav");
+            audio = new Audio("http://54.36.52.224:42424/sounds/knock.wav");
             audio.play();
             break;
 

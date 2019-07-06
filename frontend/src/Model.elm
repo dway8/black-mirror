@@ -56,16 +56,13 @@ type alias ImageSize =
 
 
 type alias MybData =
-    { countOrders : Int
+    { totalOrders : Int
     , todayOrders : Int
     , avgCart : Int
     , va : Int
-    , countUsers : Int
+    , totalUsers : Int
     , todayUsers : Int
-    , totalEvents : Int
-    , prodEvents : Int
-    , ads : Int
-    , todayAds : Int
+    , totalProdEvents : Int
     }
 
 
@@ -179,13 +176,10 @@ imageSizeDecoder =
 mybDataDecoder : D.Decoder MybData
 mybDataDecoder =
     D.succeed MybData
-        |> P.required "countOrders" D.int
+        |> P.required "totalOrders" D.int
         |> P.required "todayOrders" D.int
         |> P.required "avgCart" D.int
         |> P.required "va" D.int
-        |> P.required "countUsers" D.int
+        |> P.required "totalUsers" D.int
         |> P.required "todayUsers" D.int
-        |> P.required "totalEvents" D.int
-        |> P.required "prodEvents" D.int
-        |> P.required "ads" D.int
-        |> P.required "todayAds" D.int
+        |> P.required "totalProdEvents" D.int
