@@ -46,8 +46,8 @@ view model =
                     (viewHeader model
                         :: (case model.mybData of
                                 Success data ->
-                                    [ viewCountsMybData data
-                                    , viewMoneyMybData data model.window
+                                    [ viewCountsMybData model.window data
+                                    , viewMoneyMybData model.window data
                                     ]
 
                                 _ ->
@@ -62,7 +62,7 @@ view model =
 viewHeader : Model -> Element Msg
 viewHeader { zone, now, window, saint, weather } =
     column
-        [ width fill, alignTop, spacing (windowRatio window 20) ]
+        [ width fill, spacing (windowRatio window 20) ]
         [ row
             [ spaceEvenly, alignTop, width fill ]
             [ viewDate window zone now
@@ -72,7 +72,7 @@ viewHeader { zone, now, window, saint, weather } =
             [ width fill, spaceEvenly ]
             [ viewSaint saint
             , row
-                [ centerY, Font.size (size1 window), alignRight ]
+                [ centerY, Font.size (windowRatio window 60), alignRight ]
                 [ el [ Font.bold ] <| text (Round.round 1 weather.currently.temperature ++ "°")
                 , viewWeatherIcon weather.currently.icon
                 ]
@@ -84,14 +84,14 @@ viewDate : Window -> Zone -> Posix -> Element Msg
 viewDate window zone now =
     column
         [ spacing (windowRatio window 10) ]
-        [ el [ Font.bold, Font.size (size1 window) ] <| text (Utils.ucfirst (DateUtils.dayOfWeek zone now))
-        , el [ Font.light, Font.size (size2 window) ] <| text <| DateUtils.dayAndMonth zone now
+        [ el [ Font.bold, Font.size (windowRatio window 50) ] <| text (Utils.ucfirst (DateUtils.dayOfWeek zone now))
+        , el [ Font.light, Font.size (windowRatio window 34) ] <| text <| DateUtils.dayAndMonth zone now
         ]
 
 
 viewTime : Window -> Zone -> Posix -> Element Msg
 viewTime window zone now =
-    el [ Font.light, Font.size (size0 window), alignRight ] <| text <| DateUtils.time zone now
+    el [ Font.light, Font.size (windowRatio window 90), alignRight ] <| text <| DateUtils.time zone now
 
 
 viewSaint : String -> Element Msg
@@ -108,110 +108,99 @@ viewWeatherIcon icon =
     image [ paddingEach { left = 5, right = 0, top = 0, bottom = 0 } ] { src = getSvgIcon icon, description = "" }
 
 
-viewCountsMybData : MybData -> Element Msg
-viewCountsMybData data =
+viewCountsMybData : Window -> MybData -> Element Msg
+viewCountsMybData window data =
     row
-        []
-        [ el [ width fill, centerX, centerY ] <|
-            column
-                [ spacing 50 ]
-                [ viewUsers data
-                , viewOrders data
-                ]
-        , el [ Border.widthEach { left = 1, top = 0, bottom = 0, right = 0 }, Border.solid, width fill, centerX, centerY ] <|
-            column
-                [ spacing 50, paddingEach { left = 55, top = 0, bottom = 0, right = 0 } ]
-                [ viewTotalProdEvents data
-                ]
+        [ width fill, spaceEvenly ]
+        [ column
+            [ spacing 50, alignLeft, centerY ]
+            [ viewUsers window data
+            , viewOrders window data
+            ]
+        , el [ Border.widthEach { left = 1, top = 0, bottom = 0, right = 0 }, Border.solid, centerX, centerY, height fill, paddingXY (windowRatio window 30) 0 ] <| none
+        , viewTotalProdEvents window data
         ]
 
 
-viewTotalProdEvents : MybData -> Element Msg
-viewTotalProdEvents data =
+viewTotalProdEvents : Window -> MybData -> Element Msg
+viewTotalProdEvents window data =
     column
         []
-        [ el [ Font.size 40, Font.bold ] <|
+        [ el [ Font.size (windowRatio window 34), Font.bold ] <|
             (data.totalProdEvents
                 |> toFloat
                 |> FN.format { frenchLocale | decimals = 0 }
                 |> text
             )
-        , el [ Font.light ] <| text "Prod"
+        , el [ Font.light, Font.size (windowRatio window 26) ] <| text "Prod"
         ]
 
 
-viewMoneyMybData : MybData -> Window -> Element Msg
-viewMoneyMybData data window =
-    el [ centerX, centerY ] <|
-        row
-            [ spacing
-                (if Utils.isBigPortrait window then
-                    100
-                 else
-                    40
+viewMoneyMybData : Window -> MybData -> Element Msg
+viewMoneyMybData window data =
+    row
+        [ spacing (windowRatio window 40)
+        , centerX
+        ]
+        [ el [ Font.size (windowRatio window 34) ] <| html <| Utils.icon "zmdi zmdi-shopping-cart zmdi-hc-4x"
+        , column
+            [ spacing 15 ]
+            [ el [ Font.size (windowRatio window 46), Font.bold ] <|
+                (data.va
+                    |> toFloat
+                    |> (\i -> i / 100)
+                    |> FN.format { frenchLocale | decimals = 0 }
+                    |> (\i -> i ++ " €")
+                    |> text
                 )
+            , row
+                [ spacing 40, centerY ]
+                [ el [ Font.size (windowRatio window 34) ] <| html <| Utils.icon "zmdi zmdi-shopping-basket zmdi-hc-lg"
+                , el [ Font.size (windowRatio window 40), Font.light ] <|
+                    (data.avgCart
+                        |> String.fromInt
+                        |> (\a -> (++) a " €")
+                        |> text
+                    )
+                ]
             ]
-            [ el [ Font.size 40 ] <| html <| Utils.icon "zmdi zmdi-shopping-cart zmdi-hc-4x"
-            , el [] <|
-                column
-                    [ spacing 15 ]
-                    [ el [ Font.size 50, Font.bold ] <|
-                        (data.va
-                            |> toFloat
-                            |> (\i -> i / 100)
-                            |> FN.format { frenchLocale | decimals = 0 }
-                            |> (\i -> i ++ " €")
-                            |> text
-                        )
-                    , el [] <|
-                        row
-                            [ spacing 40, centerY ]
-                            [ el [ Font.size 40 ] <| html <| Utils.icon "zmdi zmdi-shopping-basket zmdi-hc-lg"
-                            , el [ Font.size 45, Font.light ] <|
-                                (data.avgCart
-                                    |> String.fromInt
-                                    |> (\a -> (++) a " €")
-                                    |> text
-                                )
-                            ]
-                    ]
-            ]
+        ]
 
 
-viewUsers : MybData -> Element Msg
-viewUsers data =
+viewUsers : Window -> MybData -> Element Msg
+viewUsers window data =
     row
         [ spacing 30, centerY, width fill ]
-        [ el [ width <| fillPortion 1, Font.size 50, Font.bold ] <| el [ alignRight ] <| text ("+" ++ String.fromInt data.todayUsers)
+        [ el [ width <| fillPortion 1, Font.size (windowRatio window 80), Font.bold ] <| el [ alignRight ] <| text ("+" ++ String.fromInt data.todayUsers)
         , el [ width <| fillPortion 2 ] <|
             column
                 []
-                [ el [ Font.size 40, Font.bold ] <|
+                [ el [ Font.size (windowRatio window 34), Font.bold ] <|
                     (data.totalUsers
                         |> toFloat
                         |> FN.format { frenchLocale | decimals = 0 }
                         |> text
                     )
-                , el [ Font.light ] <| text "Inscrits"
+                , el [ Font.light, Font.size (windowRatio window 26) ] <| text "Inscrits"
                 ]
         ]
 
 
-viewOrders : MybData -> Element Msg
-viewOrders data =
+viewOrders : Window -> MybData -> Element Msg
+viewOrders window data =
     row
         [ spacing 30, centerY, width fill ]
-        [ el [ width <| fillPortion 1, Font.size 50, Font.bold ] <| el [ alignRight ] <| text ("+" ++ String.fromInt data.todayOrders)
+        [ el [ width <| fillPortion 1, Font.size (windowRatio window 80), Font.bold ] <| el [ alignRight ] <| text ("+" ++ String.fromInt data.todayOrders)
         , el [ width <| fillPortion 2 ] <|
             column
                 []
-                [ el [ Font.size 40, Font.bold ] <|
+                [ el [ Font.size (windowRatio window 34), Font.bold ] <|
                     (data.totalOrders
                         |> toFloat
                         |> FN.format { frenchLocale | decimals = 0 }
                         |> text
                     )
-                , el [ Font.light ] <| text "Commandes"
+                , el [ Font.light, Font.size (windowRatio window 26) ] <| text "Commandes"
                 ]
         ]
 

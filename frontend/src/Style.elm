@@ -1,4 +1,4 @@
-module Style exposing (blackColor, size0, size1, size2, whiteColor, windowRatio)
+module Style exposing (blackColor, whiteColor, windowRatio)
 
 import Element exposing (..)
 import Model exposing (Window)
@@ -20,21 +20,3 @@ windowRatio window size =
         * 0.001
         * toFloat window.height
         |> round
-
-
-size0 : Window -> Int
-size0 window =
-    90
-        |> windowRatio window
-
-
-size1 : Window -> Int
-size1 window =
-    50
-        |> windowRatio window
-
-
-size2 : Window -> Int
-size2 window =
-    34
-        |> windowRatio window
