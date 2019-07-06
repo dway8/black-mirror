@@ -123,8 +123,9 @@ app.get("/myb_data", (req, res) => {
     res.json(mybData);
 });
 
-app.listen(PORT, function() {
-    console.log(`Listening on port ${PORT}!`);
+app.listen(process.env.PORT || PORT, function() {
+    const port = app.address().port;
+    console.log(`Listening on port ${port}!`);
 });
 
 // MYB DATA //////////////

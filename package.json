@@ -8,6 +8,8 @@
     "install": "cd server && yarn install && cd .. && cd frontend && yarn install && cd .. ",
     "lint": "cd server && yarn lint && cd .. && cd frontend && yarn lint",
     "serve": "yarn server:serve",
+    "serveProd": "yarn server:serveProd",
+    "server:serve": "cd server && yarn serve",
     "server:serve": "cd server && yarn serve",
     "dev": "yarn front:dev",
     "build": "yarn front:build",

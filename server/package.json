@@ -6,6 +6,7 @@
   "private": true,
   "scripts": {
     "serve": "nodemon -e js server.js --delay 1 --watch . --watch ../front/dist/",
+    "serveProd": "node server.js",
     "lint": "eslint_d --fix '**/*.js' '*.js'"
   },
   "devDependencies": {},
