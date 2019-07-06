@@ -61,18 +61,18 @@ view model =
 
 viewHeader : Model -> Element Msg
 viewHeader { zone, now, window, saint, weather } =
-    row
-        [ width fill, spaceEvenly, alignTop ]
-        [ column
-            [ alignLeft, spacing 80, alignTop ]
+    column
+        [ width fill, alignTop, spacing (windowRatio window 20) ]
+        [ row
+            [ spaceEvenly, alignTop, width fill ]
             [ viewDate window zone now
-            , viewSaint saint
+            , viewTime window zone now
             ]
-        , column
-            [ alignRight, alignTop ]
-            [ viewTime zone now
+        , row
+            [ width fill, spaceEvenly ]
+            [ viewSaint saint
             , row
-                [ centerY ]
+                [ centerY, Font.size (size1 window), alignRight ]
                 [ el [ Font.bold ] <| text (Round.round 1 weather.currently.temperature ++ "°")
                 , viewWeatherIcon weather.currently.icon
                 ]
@@ -89,6 +89,11 @@ viewDate window zone now =
         ]
 
 
+viewTime : Window -> Zone -> Posix -> Element Msg
+viewTime window zone now =
+    el [ Font.light, Font.size (size0 window), alignRight ] <| text <| DateUtils.time zone now
+
+
 viewSaint : String -> Element Msg
 viewSaint saint =
     row
@@ -96,11 +101,6 @@ viewSaint saint =
         [ el [] <| html <| Utils.icon "zmdi zmdi-chevron-right zmdi-hc-lg"
         , el [] <| text saint
         ]
-
-
-viewTime : Zone -> Posix -> Element Msg
-viewTime zone now =
-    el [ Font.light ] <| text <| DateUtils.time zone now
 
 
 viewWeatherIcon : String -> Element Msg
@@ -172,7 +172,6 @@ viewMoneyMybData data window =
             [ spacing
                 (if Utils.isBigPortrait window then
                     100
-
                  else
                     40
                 )
