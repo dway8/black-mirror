@@ -155,6 +155,10 @@ function checkCredentials(name, pass) {
 app.get("/admin", requireLoggedUser, (req, res) =>
     res.sendFile(path.join(__dirname, "/../dist/admin.html"))
 );
+
+app.get("/admin.html", requireLoggedUser, (req, res) =>
+    res.sendFile(path.join(__dirname, "/../dist/admin.html"))
+);
 app.get("*", (req, res) =>
     res.sendFile(path.join(__dirname, "/../dist/public.html"))
 );
