@@ -8,6 +8,7 @@ const winston = logger.loggers.general;
 const low = require("lowdb");
 const lodashId = require("lodash-id");
 const path = require("path");
+const auth = require("basic-auth");
 
 const FileSync = require("lowdb/adapters/FileSync");
 const adapter = new FileSync("db.json");
@@ -16,6 +17,7 @@ const db = low(adapter);
 // Constants
 const PORT = 42425;
 const isDevelopment = process.env.NODE_ENV !== "production";
+const secret = isDevelopment ? "secret" : process.env.SECRET;
 
 db._.mixin(lodashId);
 const bodyParser = require("body-parser");
@@ -128,12 +130,35 @@ app.post("/mmi", (req, res) => {
 });
 
 // Serving compiled elm client
-if (!isDevelopment) {
-    app.use(express.static(path.join(__dirname, "/../dist")));
-    app.get("*", (req, res) =>
-        res.sendFile(path.join(__dirname, "/../dist/public.html"))
-    );
+// if (!isDevelopment) {
+app.use(express.static(path.join(__dirname, "/../dist")));
+
+const requireLoggedUser = (req, res, next) => {
+    var credentials = auth(req);
+
+    // Check credentials
+    if (!credentials || !checkCredentials(credentials.name, credentials.pass)) {
+        winston.verbose("Wrong credentials");
+        res.statusCode = 401;
+        res.setHeader("WWW-Authenticate", 'Basic realm="example"');
+        res.end("Access denied");
+    } else {
+        winston.verbose("Credentials OK");
+        next();
+    }
+};
+
+function checkCredentials(name, pass) {
+    return name === "adminSpottt" && pass === secret;
 }
+
+app.get("/admin", requireLoggedUser, (req, res) =>
+    res.sendFile(path.join(__dirname, "/../dist/admin.html"))
+);
+app.get("*", (req, res) =>
+    res.sendFile(path.join(__dirname, "/../dist/public.html"))
+);
+// }
 
 const port = process.env.PORT || PORT;
 app.listen(port, function() {
