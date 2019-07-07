@@ -18,6 +18,7 @@ type alias Model =
     , saint : String
     , window : Window
     , messages : WebData (List Message)
+    , messageCursor : Int
     }
 
 
@@ -87,6 +88,7 @@ type Msg
     | UpdateSaint Posix
     | InitSaint ( Posix, Zone )
     | FetchMessagesResponse (WebData (List Message))
+    | AnimateMessagesAndTweet
 
 
 getTimeNow : Cmd Msg

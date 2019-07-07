@@ -4,7 +4,7 @@ import Browser
 import Public.Ephemeris as Ephemeris
 import Public.Model exposing (Model, Msg(..), Weather, Window, fetchLastTweet, fetchMessagesCmd, fetchMybData, fetchWeather, getTimeNow)
 import Public.View as View
-import RemoteData exposing (RemoteData(..))
+import RemoteData as RD exposing (RemoteData(..))
 import Task
 import Time exposing (Posix, Zone)
 
@@ -29,6 +29,7 @@ init flags =
       , window = flags.viewport
       , saint = ""
       , messages = NotAsked
+      , messageCursor = 0
       }
     , Cmd.batch
         [ fetchMybData
@@ -64,6 +65,7 @@ subscriptions model =
         , Time.every (15 * 60 * 1000) <| always FetchWeather
         , Time.every (15 * 60 * 1000) <| always FetchLastTweet
         , Time.every (60 * 60 * 1000) UpdateSaint
+        , Time.every (6 * 1000) <| always AnimateMessagesAndTweet
         ]
 
 
@@ -97,6 +99,31 @@ update msg model =
 
         FetchMessagesResponse response ->
             ( { model | messages = response }, Cmd.none )
+
+        AnimateMessagesAndTweet ->
+            case model.messages of
+                Success messages ->
+                    if messages == [] then
+                        ( model, Cmd.none )
+
+                    else
+                        let
+                            messagesLength =
+                                model.messages
+                                    |> RD.withDefault []
+                                    |> List.length
+
+                            newMessageCursor =
+                                if model.messageCursor == messagesLength then
+                                    0
+
+                                else
+                                    model.messageCursor + 1
+                        in
+                        ( { model | messageCursor = newMessageCursor }, Cmd.none )
+
+                _ ->
+                    ( model, Cmd.none )
 
         _ ->
             ( model, Cmd.none )

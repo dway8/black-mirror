@@ -1,4 +1,4 @@
-module Utils exposing (getAt, icon, isBigPortrait, styledIcon, ucfirst)
+module Utils exposing (getAt, icon, isBigPortrait, isDesktop, styledIcon, ucfirst)
 
 import Char
 import Html exposing (Html, i)
@@ -35,6 +35,11 @@ styledIcon styles str =
 isBigPortrait : Window -> Bool
 isBigPortrait window =
     window.height > 900
+
+
+isDesktop : Window -> Bool
+isDesktop window =
+    window.width > window.height
 
 
 getAt : List a -> Int -> Maybe a

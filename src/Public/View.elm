@@ -8,6 +8,7 @@ import Element.Border as Border
 import Element.Font as Font
 import FormatNumber as FN
 import FormatNumber.Locales exposing (frenchLocale)
+import List.Extra as LE
 import Model exposing (Message)
 import Public.Model exposing (Model, Msg, MybData, Tweet, Window)
 import RemoteData exposing (RemoteData(..), WebData)
@@ -26,35 +27,47 @@ view model =
                 [ Font.family
                     [ Font.external
                         { name = "Roboto"
-                        , url = "https://fonts.googleapis.com/css?family=Roboto:100,200,200italic,300,300italic,400,400italic,600,700,800"
+                        , url = "https://fonts.googleapis.com/css?family=Roboto:300,300italic,400,400italic,700"
                         }
                     ]
                 , height fill
                 , width fill
-                , clipX
-                , clipY
-                , Background.color blackColor
-                , Font.color whiteColor
+                , Background.color (rgb255 240 240 240)
                 ]
             <|
-                column
-                    [ width fill
-                    , height fill
-                    , spaceEvenly
-                    ]
-                    (viewHeader model
-                        :: (case model.mybData of
-                                Success data ->
-                                    [ viewCountsMybData model.window data
-                                    , viewMoneyMybData model.window data
-                                    ]
+                el
+                    ([ centerX
+                     , clipX
+                     , clipY
+                     , Background.color blackColor
+                     , Font.color whiteColor
+                     ]
+                        ++ (if Utils.isDesktop model.window then
+                                [ centerY, padding 30, width <| px 500, height <| px 889 ]
 
-                                _ ->
-                                    [ text "Chargement..." ]
+                            else
+                                [ width fill, height fill ]
                            )
-                        ++ [ viewMessagesAndTweet model.messages model.lastTweet
-                           ]
                     )
+                <|
+                    column
+                        [ width fill
+                        , height fill
+                        , centerX
+                        ]
+                        (viewHeader model
+                            :: (case model.mybData of
+                                    Success data ->
+                                        [ viewCountsMybData model.window data
+                                        , viewMoneyMybData model.window data
+                                        ]
+
+                                    _ ->
+                                        [ text "Chargement..." ]
+                               )
+                            ++ [ viewMessagesAndTweet model.window model.messageCursor model.messages model.lastTweet
+                               ]
+                        )
     }
 
 
@@ -129,19 +142,21 @@ viewCountsMybData window { todayUsers, totalUsers, todayOrders, totalOrders, tod
 viewGenericCount : Window -> Int -> Int -> String -> Element Msg
 viewGenericCount window todayCount totalCount label =
     row
-        [ spacing 30, centerY, width fill ]
-        [ el [ width <| fillPortion 1, Font.size (windowRatio window 80), Font.bold ] <| el [ alignRight ] <| text ("+" ++ String.fromInt todayCount)
-        , el [ width <| fillPortion 2 ] <|
-            column
-                []
-                [ el [ Font.size (windowRatio window 34), Font.bold ] <|
-                    (totalCount
-                        |> toFloat
-                        |> FN.format { frenchLocale | decimals = 0 }
-                        |> text
-                    )
-                , el [ Font.light, Font.size (windowRatio window 26) ] <| text label
-                ]
+        [ spacing (windowRatio window 10), centerY, width fill ]
+        [ row [ alignLeft, spacing (windowRatio window 10) ]
+            [ el [ Font.size (windowRatio window 50) ] <| text "+"
+            , el [ Font.size (windowRatio window 80), Font.bold ] <| text (String.fromInt todayCount)
+            ]
+        , column
+            [ spacing (windowRatio window 3) ]
+            [ el [ Font.size (windowRatio window 34), Font.bold ] <|
+                (totalCount
+                    |> toFloat
+                    |> FN.format { frenchLocale | decimals = 0 }
+                    |> text
+                )
+            , el [ Font.light, Font.size (windowRatio window 24) ] <| text label
+            ]
         ]
 
 
@@ -176,17 +191,34 @@ viewMoneyMybData window data =
         ]
 
 
-viewMessagesAndTweet : WebData (List Message) -> WebData Tweet -> Element Msg
-viewMessagesAndTweet rdMessages tweet =
-    -- case rdMessages of
-    --     Success [] ->
-    --         viewTweet tweet
-    --
-    --     Success messages ->
-    --         text "hey"
-    --
-    --     _ ->
-    viewTweet tweet
+viewMessagesAndTweet : Window -> Int -> WebData (List Message) -> WebData Tweet -> Element Msg
+viewMessagesAndTweet window messageCursor rdMessages tweet =
+    case rdMessages of
+        Success messages ->
+            let
+                currentMessage =
+                    LE.getAt messageCursor messages
+            in
+            case currentMessage of
+                Nothing ->
+                    viewTweet tweet
+
+                Just message ->
+                    column
+                        [ Background.color whiteColor
+                        , Font.color blackColor
+                        , centerX
+                        , centerY
+                        , Border.rounded (windowRatio window 14)
+                        , paddingEach { top = windowRatio window 20, bottom = windowRatio window 28, left = windowRatio window 20, right = windowRatio window 20 }
+                        , spacing (windowRatio window 15)
+                        ]
+                        [ paragraph [ Font.size (windowRatio window 30), Font.bold ] [ text message.title ]
+                        , paragraph [ Font.size (windowRatio window 28) ] [ text message.content ]
+                        ]
+
+        _ ->
+            viewTweet tweet
 
 
 viewTweet : WebData Tweet -> Element Msg
