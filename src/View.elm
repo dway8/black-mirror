@@ -7,13 +7,11 @@ import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import FormatNumber as FN
-import FormatNumber.Locales exposing (Locale, frenchLocale)
-import Html exposing (Html)
-import Html.Attributes as HA
-import Model exposing (Model, Msg, MybData, Tweet, Weather, Window)
+import FormatNumber.Locales exposing (frenchLocale)
+import Model exposing (Model, Msg, MybData, Tweet, Window)
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
-import Style exposing (..)
+import Style exposing (blackColor, whiteColor, windowRatio)
 import Time exposing (Posix, Zone)
 import Utils
 
@@ -73,8 +71,8 @@ viewHeader { zone, now, window, saint, weather } =
             [ viewSaint window saint
             , row
                 [ centerY, Font.size (windowRatio window 60), alignRight ]
-                [ el [ Font.bold ] <| text (Round.round 1 weather.currently.temperature ++ "°")
-                , viewWeatherIcon weather.currently.icon
+                [ el [ Font.bold ] <| text (Round.round 1 weather.temperature ++ "°")
+                , viewWeatherIcon weather.icon
                 ]
             ]
         ]
@@ -116,23 +114,132 @@ viewCountsMybData window data =
             [ spacing 50, alignLeft, centerY ]
             [ viewUsers window data
             , viewOrders window data
+            , viewExhibitors window data
             ]
-        , el [ Border.widthEach { left = 1, top = 0, bottom = 0, right = 0 }, Border.solid, centerX, centerY, height fill, paddingXY (windowRatio window 30) 0 ] <| none
-        , viewTotalProdEvents window data
+        , el [ Border.widthEach { left = 1, top = 0, bottom = 0, right = 0 }, Border.solid, centerX, centerY, height fill ] <| none
+        , column [ spacing 50, alignLeft, centerY ]
+            [ viewClients window data
+            , viewProdOccurrences window data
+            , viewOpenOccurrences window data
+            ]
         ]
 
 
-viewTotalProdEvents : Window -> MybData -> Element Msg
-viewTotalProdEvents window data =
-    column
-        []
-        [ el [ Font.size (windowRatio window 34), Font.bold ] <|
-            (data.totalProdEvents
-                |> toFloat
-                |> FN.format { frenchLocale | decimals = 0 }
-                |> text
-            )
-        , el [ Font.light, Font.size (windowRatio window 26) ] <| text "Prod"
+viewUsers : Window -> MybData -> Element Msg
+viewUsers window data =
+    row
+        [ spacing 30, centerY, width fill ]
+        [ el [ width <| fillPortion 1, Font.size (windowRatio window 80), Font.bold ] <| el [ alignRight ] <| text ("+" ++ String.fromInt data.todayUsers)
+        , el [ width <| fillPortion 2 ] <|
+            column
+                []
+                [ el [ Font.size (windowRatio window 34), Font.bold ] <|
+                    (data.totalUsers
+                        |> toFloat
+                        |> FN.format { frenchLocale | decimals = 0 }
+                        |> text
+                    )
+                , el [ Font.light, Font.size (windowRatio window 26) ] <| text "Orga."
+                ]
+        ]
+
+
+viewOrders : Window -> MybData -> Element Msg
+viewOrders window data =
+    row
+        [ spacing 30, centerY, width fill ]
+        [ el [ width <| fillPortion 1, Font.size (windowRatio window 80), Font.bold ] <| el [ alignRight ] <| text ("+" ++ String.fromInt data.todayOrders)
+        , el [ width <| fillPortion 2 ] <|
+            column
+                []
+                [ el [ Font.size (windowRatio window 34), Font.bold ] <|
+                    (data.totalOrders
+                        |> toFloat
+                        |> FN.format { frenchLocale | decimals = 0 }
+                        |> text
+                    )
+                , el [ Font.light, Font.size (windowRatio window 26) ] <| text "Résa"
+                ]
+        ]
+
+
+viewExhibitors : Window -> MybData -> Element Msg
+viewExhibitors window data =
+    row
+        [ spacing 30, centerY, width fill ]
+        [ el [ width <| fillPortion 1, Font.size (windowRatio window 80), Font.bold ] <| el [ alignRight ] <| text ("+" ++ String.fromInt data.todayExhibitors)
+        , el [ width <| fillPortion 2 ] <|
+            column
+                []
+                [ el [ Font.size (windowRatio window 34), Font.bold ] <|
+                    (data.totalExhibitors
+                        |> toFloat
+                        |> FN.format { frenchLocale | decimals = 0 }
+                        |> text
+                    )
+                , el [ Font.light, Font.size (windowRatio window 26) ] <| text "Exposants"
+                ]
+        ]
+
+
+viewClients : Window -> MybData -> Element Msg
+viewClients window data =
+    row
+        [ spacing 30, centerY, width fill ]
+        [ el [ width <| fillPortion 1, Font.size (windowRatio window 80), Font.bold ] <| el [ alignRight ] <| text ("+" ++ String.fromInt data.todayClients)
+        , el [ width <| fillPortion 2 ] <|
+            column
+                []
+                [ el [ Font.size (windowRatio window 34), Font.bold ] <|
+                    (data.totalClients
+                        |> toFloat
+                        |> FN.format { frenchLocale | decimals = 0 }
+                        |> text
+                    )
+                , el [ Font.light, Font.size (windowRatio window 26) ] <| text "Clients"
+                ]
+        ]
+
+
+
+-- viewGenericCount
+
+
+viewProdOccurrences : Window -> MybData -> Element Msg
+viewProdOccurrences window data =
+    row
+        [ spacing 30, centerY, width fill ]
+        [ el [ width <| fillPortion 1, Font.size (windowRatio window 80), Font.bold ] <| el [ alignRight ] <| text ("+" ++ String.fromInt data.todayProdOccurrences)
+        , el [ width <| fillPortion 2 ] <|
+            column
+                []
+                [ el [ Font.size (windowRatio window 34), Font.bold ] <|
+                    (data.totalProdOccurrences
+                        |> toFloat
+                        |> FN.format { frenchLocale | decimals = 0 }
+                        |> text
+                    )
+                , el [ Font.light, Font.size (windowRatio window 26) ] <| text "Éd. prod"
+                ]
+        ]
+
+
+viewOpenOccurrences : Window -> MybData -> Element Msg
+viewOpenOccurrences window data =
+    row
+        [ spacing 30, centerY, width fill ]
+        [ el [ width <| fillPortion 1, Font.size (windowRatio window 80), Font.bold ] <| el [ alignRight ] <| text ("+" ++ String.fromInt data.todayOpenOccurrences)
+        , el [ width <| fillPortion 2 ] <|
+            column
+                []
+                [ el [ Font.size (windowRatio window 34), Font.bold ] <|
+                    (data.totalOpenOccurrences
+                        |> toFloat
+                        |> FN.format { frenchLocale | decimals = 0 }
+                        |> text
+                    )
+                , el [ Font.light, Font.size (windowRatio window 26) ] <| text "Éd. ouvertes"
+                ]
         ]
 
 
@@ -159,49 +266,11 @@ viewMoneyMybData window data =
                 , el [ Font.size (windowRatio window 40), Font.light ] <|
                     (data.avgCart
                         |> String.fromInt
-                        |> (\a -> (++) a " €")
+                        |> (\a -> a ++ " €")
                         |> text
                     )
                 ]
             ]
-        ]
-
-
-viewUsers : Window -> MybData -> Element Msg
-viewUsers window data =
-    row
-        [ spacing 30, centerY, width fill ]
-        [ el [ width <| fillPortion 1, Font.size (windowRatio window 80), Font.bold ] <| el [ alignRight ] <| text ("+" ++ String.fromInt data.todayUsers)
-        , el [ width <| fillPortion 2 ] <|
-            column
-                []
-                [ el [ Font.size (windowRatio window 34), Font.bold ] <|
-                    (data.totalUsers
-                        |> toFloat
-                        |> FN.format { frenchLocale | decimals = 0 }
-                        |> text
-                    )
-                , el [ Font.light, Font.size (windowRatio window 26) ] <| text "Inscrits"
-                ]
-        ]
-
-
-viewOrders : Window -> MybData -> Element Msg
-viewOrders window data =
-    row
-        [ spacing 30, centerY, width fill ]
-        [ el [ width <| fillPortion 1, Font.size (windowRatio window 80), Font.bold ] <| el [ alignRight ] <| text ("+" ++ String.fromInt data.todayOrders)
-        , el [ width <| fillPortion 2 ] <|
-            column
-                []
-                [ el [ Font.size (windowRatio window 34), Font.bold ] <|
-                    (data.totalOrders
-                        |> toFloat
-                        |> FN.format { frenchLocale | decimals = 0 }
-                        |> text
-                    )
-                , el [ Font.light, Font.size (windowRatio window 26) ] <| text "Commandes"
-                ]
         ]
 
 

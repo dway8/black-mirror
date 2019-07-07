@@ -1,10 +1,10 @@
-module Model exposing (CurrentWeather, ImageSize, Media, Model, Msg(..), MybData, Tweet, Weather, Window, fetchLastTweet, fetchMybData, fetchWeather, getTimeNow)
+module Model exposing (ImageSize, Media, Model, Msg(..), MybData, Tweet, Weather, Window, fetchLastTweet, fetchMybData, fetchWeather, getTimeNow)
 
 import Http
 import Json.Decode as D
 import Json.Decode.Pipeline as P
 import RemoteData exposing (RemoteData(..), WebData)
-import Task exposing (Task)
+import Task
 import Time exposing (Posix, Zone)
 
 
@@ -26,10 +26,6 @@ type alias Window =
 
 
 type alias Weather =
-    { currently : CurrentWeather }
-
-
-type alias CurrentWeather =
     { icon : String
     , summary : String
     , temperature : Float
@@ -56,13 +52,20 @@ type alias ImageSize =
 
 
 type alias MybData =
-    { totalOrders : Int
+    { todayUsers : Int
+    , totalUsers : Int
     , todayOrders : Int
+    , totalOrders : Int
+    , todayExhibitors : Int
+    , totalExhibitors : Int
+    , todayClients : Int
+    , totalClients : Int
+    , todayProdOccurrences : Int
+    , totalProdOccurrences : Int
+    , todayOpenOccurrences : Int
+    , totalOpenOccurrences : Int
     , avgCart : Int
     , va : Int
-    , totalUsers : Int
-    , todayUsers : Int
-    , totalProdEvents : Int
     }
 
 
@@ -118,15 +121,9 @@ fetchMybData =
 weatherDecoder : D.Decoder Weather
 weatherDecoder =
     D.succeed Weather
-        |> P.required "currently" currentWeatherDecoder
-
-
-currentWeatherDecoder : D.Decoder CurrentWeather
-currentWeatherDecoder =
-    D.succeed CurrentWeather
-        |> P.required "icon" D.string
-        |> P.required "summary" D.string
-        |> P.required "temperature" D.float
+        |> P.requiredAt [ "currently", "icon" ] D.string
+        |> P.requiredAt [ "currently", "summary" ] D.string
+        |> P.requiredAt [ "currently", "temperature" ] D.float
 
 
 tweetDecoder : D.Decoder Tweet
@@ -150,7 +147,7 @@ tweetTextDecoder =
                     Just lastIndex ->
                         s
                             |> String.length
-                            |> (\a -> (-) a lastIndex)
+                            |> (\length -> length - lastIndex)
                             |> (\a -> String.dropRight a s)
                             |> D.succeed
 
@@ -176,10 +173,17 @@ imageSizeDecoder =
 mybDataDecoder : D.Decoder MybData
 mybDataDecoder =
     D.succeed MybData
-        |> P.required "totalOrders" D.int
+        |> P.required "todayUsers" D.int
+        |> P.required "totalUsers" D.int
         |> P.required "todayOrders" D.int
+        |> P.required "totalOrders" D.int
+        |> P.required "todayExhibitors" D.int
+        |> P.required "totalExhibitors" D.int
+        |> P.required "todayClients" D.int
+        |> P.required "totalClients" D.int
+        |> P.required "todayProdOccurrences" D.int
+        |> P.required "totalProdOccurrences" D.int
+        |> P.required "todayOpenOccurrences" D.int
+        |> P.required "totalOpenOccurrences" D.int
         |> P.required "avgCart" D.int
         |> P.required "va" D.int
-        |> P.required "totalUsers" D.int
-        |> P.required "todayUsers" D.int
-        |> P.required "totalProdEvents" D.int

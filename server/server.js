@@ -53,22 +53,6 @@ app.use(forceReadDB);
 // ROUTES ////////////////
 //////////////////////////
 
-app.post("/mmi", (req, res) => {
-    res.json({ message: "OK" });
-    var params = req.body;
-    winston.verbose("Received params from MYB", params);
-
-    if (params.new_user) {
-        handleNewUser();
-    } else if (params.new_order && params.amount) {
-        handleNewOrder(params);
-    } else if (params.order_cancelled && params.amount) {
-        handleOrderCancelled(params);
-    } else if (params.prod_event) {
-        handleProdEvent();
-    }
-});
-
 app.get("/api/forecast/:coords", (req, res) => {
     request.get(
         {
@@ -123,6 +107,26 @@ app.get("/api/myb_data", (req, res) => {
     res.json(mybData);
 });
 
+app.post("/mmi", (req, res) => {
+    res.json({ message: "OK" });
+    var params = req.body;
+    winston.verbose("Received params from MYB", params);
+
+    if (params.new_user) {
+        handleNewUser();
+    } else if (params.new_order && params.amount) {
+        handleNewOrder(params);
+    } else if (params.order_cancelled && params.amount) {
+        handleOrderCancelled(params);
+    } else if (params.new_exhibitor) {
+        handleNewExhibitor();
+    } else if (params.new_prod_occurrence) {
+        handleNewProdOccurrence(params);
+    } else if (params.new_open_occurrence) {
+        handleNewOpenOccurrence();
+    }
+});
+
 // Serving compiled elm client
 if (!isDevelopment) {
     app.use(express.static(path.join(__dirname, "/../dist")));
@@ -140,53 +144,119 @@ app.listen(port, function() {
 //////////////////////////
 
 function handleNewUser() {
-    const currentMybData = _.cloneDeep(getCurrentMybData());
+    let { id, todayUsers, totalUsers } = _.cloneDeep(getCurrentMybData());
 
-    const totalUsers = currentMybData.totalUsers + 1;
-    const todayUsers = currentMybData.todayUsers + 1;
+    todayUsers++;
+    totalUsers++;
 
-    updateTodayMybData({ totalUsers, todayUsers }, currentMybData.id);
+    updateTodayMybData({ totalUsers, todayUsers }, id);
 }
 
 function handleNewOrder(params) {
-    const currentMybData = _.cloneDeep(getCurrentMybData());
+    let {
+        id,
+        todayOrders,
+        totalOrders,
+        todayExhibitors,
+        totalExhibitors,
+        va,
+        avgCart,
+    } = _.cloneDeep(getCurrentMybData());
 
-    const totalOrders = currentMybData.totalOrders + 1;
-    const va = currentMybData.va + parseFloat(params.amount);
-    const avgCart = Math.round(va / 100 / totalOrders);
-    const todayOrders = currentMybData.todayOrders + 1;
+    todayOrders++;
+    totalOrders++;
+    va = va + parseFloat(params.amount);
+    avgCart = Math.round(va / 100 / totalOrders);
+
+    if (params.is_new_exhibitor) {
+        todayExhibitors++;
+        totalExhibitors++;
+    }
 
     updateTodayMybData(
-        { totalOrders, todayOrders, va, avgCart },
-        currentMybData.id
+        {
+            todayOrders,
+            totalOrders,
+            todayExhibitors,
+            totalExhibitors,
+            va,
+            avgCart,
+        },
+        id
     );
 }
 
 function handleOrderCancelled(params) {
-    const currentMybData = _.cloneDeep(getCurrentMybData());
+    let { id, todayOrders, totalOrders, va, avgCart } = _.cloneDeep(
+        getCurrentMybData()
+    );
 
-    const totalOrders = currentMybData.totalOrders - 1;
-    const va = currentMybData.va - parseFloat(params.amount);
-    const avgCart = Math.round(va / 100 / totalOrders);
+    totalOrders--;
+    va = va - parseFloat(params.amount);
+    avgCart = Math.round(va / 100 / totalOrders);
 
-    let todayOrders = currentMybData.todayOrders;
     const orderDate = new Date(params.date * 1000);
     if (orderDate >= getTodayMidnight()) {
-        todayOrders = currentMybData.todayOrders - 1;
+        todayOrders--;
+    }
+
+    updateTodayMybData({ totalOrders, todayOrders, va, avgCart }, id);
+}
+
+function handleNewExhibitor() {
+    let { id, todayExhibitors, totalExhibitors } = _.cloneDeep(
+        getCurrentMybData()
+    );
+
+    todayExhibitors++;
+    totalExhibitors++;
+
+    updateTodayMybData({ totalExhibitors, todayExhibitors }, id);
+}
+
+function handleNewProdOccurrence(params) {
+    let {
+        id,
+        todayClients,
+        totalClients,
+        todayProdOccurrences,
+        totalProdOccurrences,
+    } = _.cloneDeep(getCurrentMybData());
+
+    todayProdOccurrences++;
+    totalProdOccurrences++;
+
+    if (params.is_new_client) {
+        todayClients++;
+        totalClients++;
     }
 
     updateTodayMybData(
-        { totalOrders, todayOrders, va, avgCart },
-        currentMybData.id
+        {
+            todayProdOccurrences,
+            totalProdOccurrences,
+            todayClients,
+            totalClients,
+        },
+        id
     );
 }
 
-function handleProdEvent() {
-    const currentMybData = _.cloneDeep(getCurrentMybData());
+function handleNewOpenOccurrence() {
+    let { id, todayOpenOccurrences, totalOpenOccurrences } = _.cloneDeep(
+        getCurrentMybData()
+    );
 
-    const totalProdEvents = currentMybData.totalProdEvents + 1;
+    todayOpenOccurrences++;
+    totalOpenOccurrences++;
 
-    updateTodayMybData({ totalProdEvents }, currentMybData.id);
+    updateTodayMybData(
+        {
+            todayOpenOccurrences,
+            totalOpenOccurrences,
+        },
+        id
+    );
 }
 
 // HELPERS
@@ -209,13 +279,20 @@ function getCurrentMybData() {
         mybData = db
             .get("myb_data")
             .insert({
-                totalUsers: 0,
                 todayUsers: 0,
-                totalOrders: 0,
+                totalUsers: 0,
                 todayOrders: 0,
+                totalOrders: 0,
+                todayExhibitors: 0,
+                totalExhibitors: 0,
+                todayClients: 0,
+                totalClients: 0,
+                todayProdOccurrences: 0,
+                totalProdOccurrences: 0,
+                todayOpenOccurrences: 0,
+                totalOpenOccurrences: 0,
                 va: 0,
                 avgCart: 0,
-                totalProdEvents: 0,
                 date: getTodayMidnight(),
             })
             .write();
@@ -249,8 +326,12 @@ function resetDayMybData() {
 
     let newData = {
         ...yesterdayMybData,
-        todayOrders: 0,
         todayUsers: 0,
+        todayOrders: 0,
+        todayExhibitors: 0,
+        todayClients: 0,
+        todayProdOccurrences: 0,
+        todayOpenOccurrences: 0,
         date: getTodayMidnight(),
     };
     delete newData.id;

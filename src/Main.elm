@@ -1,10 +1,8 @@
 module Main exposing (main)
 
 import Browser
-import Element exposing (..)
-import Element.Font as Font
 import Ephemeris
-import Model exposing (CurrentWeather, Model, Msg(..), Weather, Window, fetchLastTweet, fetchMybData, fetchWeather, getTimeNow)
+import Model exposing (Model, Msg(..), Weather, Window, fetchLastTweet, fetchMybData, fetchWeather, getTimeNow)
 import RemoteData exposing (RemoteData(..))
 import Task
 import Time exposing (Posix, Zone)
@@ -44,11 +42,6 @@ init flags =
 
 initialWeather : Weather
 initialWeather =
-    { currently = initialCurrentWeather }
-
-
-initialCurrentWeather : CurrentWeather
-initialCurrentWeather =
     { icon = ""
     , summary = ""
     , temperature = 0
@@ -78,7 +71,7 @@ update msg model =
         FetchWeatherResponse response ->
             case response of
                 Success w ->
-                    ( { model | weather = { currently = w.currently } }
+                    ( { model | weather = w }
                     , Cmd.none
                     )
 
