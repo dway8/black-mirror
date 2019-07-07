@@ -12,7 +12,7 @@
     "serve": "yarn server:serve",
     "serveProd": "yarn server:serveProd",
     "server:serve": "cd server && yarn serve",
-    "server:serveProd": "cd server && yarn serveProd"
+    "server:serveProd": "cd server && yarn install && yarn serveProd"
   },
   "devDependencies": {
     "elm": "^0.19.0-bugfix6",
@@ -35,7 +35,6 @@
     "http-server": "^0.11.1",
     "webpack": "^4.10.2",
     "webpack-cli": "^3.1.2",
-    "webpack-hot-middleware": "^2.25.0",
     "webpack-merge": "^4.1.2"
   },
   "prettier": {
