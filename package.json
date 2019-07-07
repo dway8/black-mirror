@@ -2,22 +2,22 @@
   "name": "blackmirror",
   "version": "0.0.1",
   "description": "Blackmirror",
-  "author": "dway88",
+  "author": "dway8",
+  "license": "MIT",
   "private": true,
   "scripts": {
-    "install": "cd server && yarn install && cd .. && cd frontend && yarn install && cd .. ",
-    "lint": "cd server && yarn lint && cd .. && cd frontend && yarn lint",
+    "lint": "cd server && yarn lint && cd .. && yarn lint",
+    "dev": "webpack-dev-server --mode=development --hot --inline --config webpack.config.js --port 42424 --host 0.0.0.0 --public 0.0.0.0:42424",
+    "build": "webpack --mode=production --progress --config webpack.config.js",
     "serve": "yarn server:serve",
     "serveProd": "yarn server:serveProd",
     "server:serve": "cd server && yarn serve",
-    "server:serve": "cd server && yarn serve",
-    "dev": "yarn front:dev",
-    "build": "yarn front:build",
-    "compile": "yarn front:compile",
-    "front:dev": "cd frontend && yarn dev",
-    "front:build": "cd frontend && yarn build"
+    "server:serveProd": "cd server && yarn serveProd"
   },
   "devDependencies": {
+    "elm": "^0.19.0-bugfix6",
+    "elm-format": "^0.8.0",
+    "elm-hot-webpack-loader": "^1.0.0",
     "eslint": "^5.14.1",
     "eslint-config-prettier": "^4.0.0",
     "eslint-plugin-jest": "^22.4.1",
@@ -26,10 +26,17 @@
     "glob": "^5.0.14",
     "prettier": "^1.16.4",
     "prettier_d": "^5.7.4",
+    "webpack-dev-server": "^3.1.4",
     "yadda": "^1.5.0"
   },
   "dependencies": {
-    "http-server": "^0.11.1"
+    "copy-webpack-plugin": "^5.0.3",
+    "elm-webpack-loader": "^5.0.0",
+    "http-server": "^0.11.1",
+    "webpack": "^4.10.2",
+    "webpack-cli": "^3.1.2",
+    "webpack-hot-middleware": "^2.25.0",
+    "webpack-merge": "^4.1.2"
   },
   "prettier": {
     "tabWidth": 4,

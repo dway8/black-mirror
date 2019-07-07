@@ -3,9 +3,10 @@
   "version": "0.0.1",
   "description": "Blackmirror back",
   "author": "dway88",
+  "license": "MIT",
   "private": true,
   "scripts": {
-    "serve": "nodemon -e js server.js --delay 1 --watch . --watch ../front/dist/",
+    "serve": "nodemon -e js server.js --delay 1 --watch . --watch ../dist/",
     "serveProd": "node server.js",
     "lint": "eslint_d --fix '**/*.js' '*.js'"
   },
@@ -18,6 +19,7 @@
     "lodash-id": "^0.14.0",
     "lowdb": "^1.0.0",
     "nodemon": "^1.18.10",
+    "path": "^0.12.7",
     "request": "^2.88.0",
     "winston": "^3.2.1",
     "winston-daily-rotate-file": "^3.8.0"

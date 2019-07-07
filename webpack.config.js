@@ -1,5 +1,6 @@
 let path = require("path");
 let merge = require("webpack-merge");
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 let prod = "production";
 let dev = "development";
@@ -63,7 +64,6 @@ if (isDev === true) {
                 proxy: {
                     "/api": {
                         target: "http://localhost:" + "42425",
-                        pathRewrite: { "^/api": "" },
                         proxyTimeout: 5 * 60 * 1000,
                     },
                 },
@@ -136,6 +136,12 @@ if (isProd === true) {
                     },
                 ],
             },
+
+            plugins: [
+                new CopyWebpackPlugin([
+                    { from: 'static' }
+                ]),
+            ],
         });
     };
 }

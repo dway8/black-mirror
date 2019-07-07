@@ -7,6 +7,7 @@ const logger = require("./logger");
 const winston = logger.loggers.general;
 const low = require("lowdb");
 const lodashId = require("lodash-id");
+const path = require("path");
 
 const FileSync = require("lowdb/adapters/FileSync");
 const adapter = new FileSync("db.json");
@@ -14,6 +15,7 @@ const db = low(adapter);
 //
 // Constants
 const PORT = 42425;
+const isDevelopment = process.env.NODE_ENV !== "production";
 
 db._.mixin(lodashId);
 const bodyParser = require("body-parser");
@@ -48,6 +50,14 @@ var forceReadDB = function(req, res, next) {
 
 app.use(forceReadDB);
 
+// Serving compiled elm client
+if (!isDevelopment) {
+    app.use(express.static(path.join(__dirname, "/../dist")));
+    app.get("*", (req, res) =>
+        res.sendFile(path.join(__dirname, "/../dist/index.html"))
+    );
+}
+
 // ROUTES ////////////////
 //////////////////////////
 
@@ -67,7 +77,7 @@ app.post("/mmi", (req, res) => {
     }
 });
 
-app.get("/forecast/:coords", (req, res) => {
+app.get("/api/forecast/:coords", (req, res) => {
     request.get(
         {
             url: `https://api.darksky.net/forecast/537e53749d634ff0707fa5acadb2eab3/${
@@ -89,7 +99,7 @@ app.get("/forecast/:coords", (req, res) => {
     );
 });
 
-app.get("/last_tweet", (req, res) => {
+app.get("/api/last_tweet", (req, res) => {
     request.get(
         {
             url: "https://api.twitter.com/1.1/statuses/user_timeline.json",
@@ -118,13 +128,13 @@ app.get("/last_tweet", (req, res) => {
     );
 });
 
-app.get("/myb_data", (req, res) => {
+app.get("/api/myb_data", (req, res) => {
     const mybData = getCurrentMybData();
     res.json(mybData);
 });
 
-app.listen(process.env.PORT || PORT, function() {
-    const port = app.address().port;
+const port = process.env.PORT || PORT;
+app.listen(port, function() {
     console.log(`Listening on port ${port}!`);
 });
 
