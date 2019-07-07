@@ -1,9 +1,10 @@
-module Public.Model exposing (ImageSize, Media, Model, Msg(..), MybData, Tweet, Weather, Window, fetchLastTweet, fetchMybData, fetchWeather, getTimeNow)
+module Public.Model exposing (ImageSize, Media, Model, Msg(..), MybData, Tweet, Weather, Window, fetchLastTweet, fetchMessagesCmd, fetchMybData, fetchWeather, getTimeNow)
 
 import Http
 import Json.Decode as D
 import Json.Decode.Pipeline as P
-import RemoteData exposing (RemoteData(..), WebData)
+import Model exposing (Message)
+import RemoteData as RD exposing (RemoteData(..), WebData)
 import Task
 import Time exposing (Posix, Zone)
 
@@ -16,6 +17,7 @@ type alias Model =
     , lastTweet : WebData Tweet
     , saint : String
     , window : Window
+    , messages : WebData (List Message)
     }
 
 
@@ -84,6 +86,7 @@ type Msg
     | FetchLastTweetResponse (WebData Tweet)
     | UpdateSaint Posix
     | InitSaint ( Posix, Zone )
+    | FetchMessagesResponse (WebData (List Message))
 
 
 getTimeNow : Cmd Msg
@@ -97,7 +100,7 @@ fetchWeather =
     Http.get
         { url = "/api/forecast/45.7701213,4.829064300000027?lang=fr&units=si&exclude=minutely,alerts,flags"
         , expect =
-            Http.expectJson (RemoteData.fromResult >> FetchWeatherResponse) weatherDecoder
+            Http.expectJson (RD.fromResult >> FetchWeatherResponse) weatherDecoder
         }
 
 
@@ -106,7 +109,7 @@ fetchLastTweet =
     Http.get
         { url = "/api/last_tweet"
         , expect =
-            Http.expectJson (RemoteData.fromResult >> FetchLastTweetResponse) tweetDecoder
+            Http.expectJson (RD.fromResult >> FetchLastTweetResponse) tweetDecoder
         }
 
 
@@ -114,7 +117,7 @@ fetchMybData : Cmd Msg
 fetchMybData =
     Http.get
         { url = "/api/myb_data"
-        , expect = Http.expectJson (RemoteData.fromResult >> FetchMybDataResponse) <| mybDataDecoder
+        , expect = Http.expectJson (RD.fromResult >> FetchMybDataResponse) <| mybDataDecoder
         }
 
 
@@ -187,3 +190,11 @@ mybDataDecoder =
         |> P.required "totalOpenOccurrences" D.int
         |> P.required "avgCart" D.int
         |> P.required "va" D.int
+
+
+fetchMessagesCmd : Cmd Msg
+fetchMessagesCmd =
+    Http.get
+        { url = "/api/messages"
+        , expect = Http.expectJson (RD.fromResult >> FetchMessagesResponse) Model.messagesDecoder
+        }

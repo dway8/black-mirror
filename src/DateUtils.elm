@@ -1,8 +1,7 @@
-module DateUtils exposing (dayAndMonth, dayOfWeek, time)
+module DateUtils exposing (dateDecoder, dayAndMonth, dayOfWeek, time)
 
 import DateFormat as DF
 import DateFormat.Language as DFL exposing (english)
-import DateFormat.Relative as DFR
 import Json.Decode as D
 import Time exposing (Month(..), Posix, Weekday(..), Zone)
 
@@ -108,3 +107,10 @@ time zone date =
         ]
         zone
         date
+
+
+dateDecoder : D.Decoder Posix
+dateDecoder =
+    D.int
+        |> D.andThen
+            (\i -> D.succeed <| Time.millisToPosix i)

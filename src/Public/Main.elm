@@ -2,7 +2,7 @@ module Public.Main exposing (main)
 
 import Browser
 import Public.Ephemeris as Ephemeris
-import Public.Model exposing (Model, Msg(..), Weather, Window, fetchLastTweet, fetchMybData, fetchWeather, getTimeNow)
+import Public.Model exposing (Model, Msg(..), Weather, Window, fetchLastTweet, fetchMessagesCmd, fetchMybData, fetchWeather, getTimeNow)
 import Public.View as View
 import RemoteData exposing (RemoteData(..))
 import Task
@@ -28,6 +28,7 @@ init flags =
       , lastTweet = NotAsked
       , window = flags.viewport
       , saint = ""
+      , messages = NotAsked
       }
     , Cmd.batch
         [ fetchMybData
@@ -36,6 +37,7 @@ init flags =
         , fetchLastTweet
         , Task.map2 (\time zone -> ( time, zone )) Time.now Time.here
             |> Task.perform InitSaint
+        , fetchMessagesCmd
         ]
     )
 
@@ -92,6 +94,9 @@ update msg model =
             ( { model | saint = newSaint }
             , Cmd.none
             )
+
+        FetchMessagesResponse response ->
+            ( { model | messages = response }, Cmd.none )
 
         _ ->
             ( model, Cmd.none )

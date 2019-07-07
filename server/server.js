@@ -24,7 +24,7 @@ const bodyParser = require("body-parser");
 
 const _ = require("lodash");
 
-db.defaults({ myb_data: [] }).write();
+db.defaults({ myb_data: [], messages: [] }).write();
 
 const whitelist = ["http://localhost", "http://localhost:42424"];
 const corsOptions = {
@@ -128,6 +128,46 @@ app.post("/mmi", (req, res) => {
         handleNewOpenOccurrence();
     }
 });
+
+app.get("/api/messages", (req, res) => {
+    const messages = db
+        .get("messages")
+        .filter(m => m.active)
+        .value();
+    res.json(messages);
+});
+
+////// ADMIN ROUTES /////////////////
+
+app.get("/api/admin/messages", requireLoggedUser, (req, res) => {
+    const messages = db.get("messages").value();
+    res.json(messages);
+});
+
+app.post("/api/admin/messages", requireLoggedUser, (req, res) => {
+    try {
+        const { title, content } = req.body;
+        winston.verbose("Creating a new message with params", {
+            title,
+            content,
+        });
+        const newMessage = db
+            .get("messages")
+            .insert({
+                title,
+                content,
+                createdAt: new Date().getTime(),
+                active: true,
+            })
+            .write();
+        res.json({ success: true, data: newMessage });
+    } catch (e) {
+        winston.error("Error while creating a message", { e });
+        res.json({ success: false, error: "Une erreur s'est produite" });
+    }
+});
+
+/////////////////////////////////////
 
 // Serving compiled elm client
 if (!isDevelopment) {

@@ -8,6 +8,7 @@ import Element.Border as Border
 import Element.Font as Font
 import FormatNumber as FN
 import FormatNumber.Locales exposing (frenchLocale)
+import Model exposing (Message)
 import Public.Model exposing (Model, Msg, MybData, Tweet, Window)
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
@@ -51,7 +52,7 @@ view model =
                                 _ ->
                                     [ text "Chargement..." ]
                            )
-                        ++ [ viewTweet model.lastTweet
+                        ++ [ viewMessagesAndTweet model.messages model.lastTweet
                            ]
                     )
     }
@@ -173,6 +174,19 @@ viewMoneyMybData window data =
                 ]
             ]
         ]
+
+
+viewMessagesAndTweet : WebData (List Message) -> WebData Tweet -> Element Msg
+viewMessagesAndTweet rdMessages tweet =
+    -- case rdMessages of
+    --     Success [] ->
+    --         viewTweet tweet
+    --
+    --     Success messages ->
+    --         text "hey"
+    --
+    --     _ ->
+    viewTweet tweet
 
 
 viewTweet : WebData Tweet -> Element Msg
