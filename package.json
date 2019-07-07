@@ -7,8 +7,9 @@
   "private": true,
   "scripts": {
     "lint": "cd server && yarn lint && cd .. && yarn lint",
-    "dev": "webpack-dev-server --mode=development --hot --inline --config webpack.config.js --port 42424 --host 0.0.0.0 --public 0.0.0.0:42424",
-    "build": "webpack --mode=production --progress --config webpack.config.js",
+    "dev": "webpack-dev-server --mode=development --hot --inline --config webpack.config.js --port 42424 --host 0.0.0.0 --public 0.0.0.0:42424 --env.appName",
+    "build": "webpack --mode=production --progress --config webpack.config.js --env.appName",
+    "heroku-postbuild": "yarn build all",
     "serve": "yarn server:serve",
     "serveProd": "yarn server:serveProd",
     "server:serve": "cd server && yarn serve",

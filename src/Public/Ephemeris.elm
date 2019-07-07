@@ -1,4 +1,4 @@
-module Ephemeris exposing (getDaySaint)
+module Public.Ephemeris exposing (getDaySaint)
 
 import Time exposing (Month(..), Posix, Zone)
 import Utils

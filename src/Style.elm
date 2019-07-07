@@ -1,7 +1,7 @@
 module Style exposing (blackColor, whiteColor, windowRatio)
 
-import Element exposing (..)
-import Model exposing (Window)
+import Element exposing (Color, rgb255)
+import Public.Model exposing (Window)
 
 
 blackColor : Color

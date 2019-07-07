@@ -10,9 +10,10 @@ let TARGET_ENV = process.env.npm_lifecycle_event === "build" ? prod : dev;
 let isDev = TARGET_ENV === dev;
 let isProd = TARGET_ENV === prod;
 
-let entryPath = path.join(__dirname, "./static/index.js");
+let allApps = ["public", "admin"];
+
 let outputPath = path.resolve(__dirname + "/dist");
-let outputFilename = "app.js";
+let outputFilename = "app[name].js";
 
 console.log(`WEBPACK GO! Building for ${TARGET_ENV}`);
 
@@ -33,12 +34,33 @@ let commonConfig = {
     },
 };
 
+let entryFromEnv = function(env) {
+    let appName = env.appName;
+    let entry = {};
+    let sources;
+
+    if (appName === "all") {
+        sources = allApps;
+    } else {
+        sources = [appName];
+    }
+
+    sources.forEach(function(source) {
+        entry[source] = [
+            path.join(__dirname, "./static/index" + source + ".js"),
+        ];
+    });
+
+    return entry;
+};
+
 // additional webpack settings for local env (when invoked by 'npm start')
 if (isDev === true) {
     console.log("Serving locally...");
-    module.exports = function() {
+    module.exports = function(env) {
+        const entry = entryFromEnv(env);
         return merge(commonConfig, {
-            entry: entryPath,
+            entry: entry,
             devServer: {
                 contentBase: [".", "./static", "./assets"],
                 headers: {
@@ -116,9 +138,10 @@ if (isDev === true) {
 if (isProd === true) {
     console.log("Building for prod...");
 
-    module.exports = function() {
+    module.exports = function(env) {
+        const entry = entryFromEnv(env);
         return merge(commonConfig, {
-            entry: entryPath,
+            entry: entry,
 
             module: {
                 rules: [

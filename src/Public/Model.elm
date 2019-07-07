@@ -1,4 +1,4 @@
-module Model exposing (ImageSize, Media, Model, Msg(..), MybData, Tweet, Weather, Window, fetchLastTweet, fetchMybData, fetchWeather, getTimeNow)
+module Public.Model exposing (ImageSize, Media, Model, Msg(..), MybData, Tweet, Weather, Window, fetchLastTweet, fetchMybData, fetchWeather, getTimeNow)
 
 import Http
 import Json.Decode as D

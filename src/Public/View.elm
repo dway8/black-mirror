@@ -1,4 +1,4 @@
-module View exposing (view)
+module Public.View exposing (view)
 
 import Browser exposing (Document)
 import DateUtils
@@ -8,7 +8,7 @@ import Element.Border as Border
 import Element.Font as Font
 import FormatNumber as FN
 import FormatNumber.Locales exposing (frenchLocale)
-import Model exposing (Model, Msg, MybData, Tweet, Window)
+import Public.Model exposing (Model, Msg, MybData, Tweet, Window)
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
 import Style exposing (blackColor, whiteColor, windowRatio)

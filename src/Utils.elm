@@ -1,10 +1,9 @@
 module Utils exposing (getAt, icon, isBigPortrait, styledIcon, ucfirst)
 
 import Char
-import Element as E
 import Html exposing (Html, i)
 import Html.Attributes exposing (..)
-import Model exposing (Window)
+import Public.Model exposing (Window)
 
 
 ucfirst : String -> String

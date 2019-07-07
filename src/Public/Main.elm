@@ -1,12 +1,12 @@
-module Main exposing (main)
+module Public.Main exposing (main)
 
 import Browser
-import Ephemeris
-import Model exposing (Model, Msg(..), Weather, Window, fetchLastTweet, fetchMybData, fetchWeather, getTimeNow)
+import Public.Ephemeris as Ephemeris
+import Public.Model exposing (Model, Msg(..), Weather, Window, fetchLastTweet, fetchMybData, fetchWeather, getTimeNow)
+import Public.View as View
 import RemoteData exposing (RemoteData(..))
 import Task
 import Time exposing (Posix, Zone)
-import View
 
 
 main : Program Flags Model Msg

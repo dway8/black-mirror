@@ -1,4 +1,4 @@
-port module Ports exposing (GenericOutsideData, InfoForOutside(..), infoForOutside, sendInfoOutside)
+port module Public.Ports exposing (GenericOutsideData, InfoForOutside(..), infoForOutside, sendInfoOutside)
 
 import Json.Encode as E
 

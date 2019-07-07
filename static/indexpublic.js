@@ -1,6 +1,6 @@
 "use strict";
 
-var { Elm } = require("../src/Main.elm");
+var { Elm } = require("../src/Public/Main.elm");
 var node = document.getElementById("content");
 
 var now = new Date().getTime();
@@ -8,7 +8,7 @@ var viewport = {
     width: window.innerWidth,
     height: window.innerHeight,
 };
-var app = Elm.Main.init({
+var app = Elm.Public.Main.init({
     node,
     flags: { now, viewport },
 });
