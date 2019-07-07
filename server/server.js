@@ -130,39 +130,20 @@ app.post("/mmi", (req, res) => {
 });
 
 // Serving compiled elm client
-// if (!isDevelopment) {
-app.use(express.static(path.join(__dirname, "/../dist")));
+if (!isDevelopment) {
+    app.get("/admin", requireLoggedUser, (req, res) =>
+        res.sendFile(path.join(__dirname, "/../dist/admin.html"))
+    );
 
-const requireLoggedUser = (req, res, next) => {
-    var credentials = auth(req);
+    app.get("/admin.html", requireLoggedUser, (req, res) =>
+        res.sendFile(path.join(__dirname, "/../dist/admin.html"))
+    );
+    app.use(express.static(path.join(__dirname, "/../dist")));
 
-    // Check credentials
-    if (!credentials || !checkCredentials(credentials.name, credentials.pass)) {
-        winston.verbose("Wrong credentials");
-        res.statusCode = 401;
-        res.setHeader("WWW-Authenticate", 'Basic realm="example"');
-        res.end("Access denied");
-    } else {
-        winston.verbose("Credentials OK");
-        next();
-    }
-};
-
-function checkCredentials(name, pass) {
-    return name === "adminSpottt" && pass === secret;
+    app.get("/", (req, res) =>
+        res.sendFile(path.join(__dirname, "/../dist/public.html"))
+    );
 }
-
-app.get("/admin", requireLoggedUser, (req, res) =>
-    res.sendFile(path.join(__dirname, "/../dist/admin.html"))
-);
-
-app.get("/admin.html", requireLoggedUser, (req, res) =>
-    res.sendFile(path.join(__dirname, "/../dist/admin.html"))
-);
-app.get("*", (req, res) =>
-    res.sendFile(path.join(__dirname, "/../dist/public.html"))
-);
-// }
 
 const port = process.env.PORT || PORT;
 app.listen(port, function() {
@@ -289,6 +270,25 @@ function handleNewOpenOccurrence() {
 }
 
 // HELPERS
+
+function requireLoggedUser(req, res, next) {
+    var credentials = auth(req);
+
+    // Check credentials
+    if (!credentials || !checkCredentials(credentials.name, credentials.pass)) {
+        winston.verbose("Wrong credentials");
+        res.statusCode = 401;
+        res.setHeader("WWW-Authenticate", 'Basic realm="example"');
+        res.end("Access denied");
+    } else {
+        winston.verbose("Credentials OK");
+        next();
+    }
+}
+
+function checkCredentials(name, pass) {
+    return name === "adminSpottt" && pass === secret;
+}
 
 function getTodayMidnight() {
     return new Date().setHours(0, 0, 0, 0);
