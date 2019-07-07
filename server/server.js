@@ -50,14 +50,6 @@ var forceReadDB = function(req, res, next) {
 
 app.use(forceReadDB);
 
-// Serving compiled elm client
-if (!isDevelopment) {
-    app.use(express.static(path.join(__dirname, "/../dist")));
-    app.get("*", (req, res) =>
-        res.sendFile(path.join(__dirname, "/../dist/index.html"))
-    );
-}
-
 // ROUTES ////////////////
 //////////////////////////
 
@@ -130,6 +122,14 @@ app.get("/api/myb_data", (req, res) => {
     const mybData = getCurrentMybData();
     res.json(mybData);
 });
+
+// Serving compiled elm client
+if (!isDevelopment) {
+    app.use(express.static(path.join(__dirname, "/../dist")));
+    app.get("*", (req, res) =>
+        res.sendFile(path.join(__dirname, "/../dist/index.html"))
+    );
+}
 
 const port = process.env.PORT || PORT;
 app.listen(port, function() {
