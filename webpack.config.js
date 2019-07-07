@@ -1,6 +1,6 @@
 let path = require("path");
 let merge = require("webpack-merge");
-const CopyWebpackPlugin = require('copy-webpack-plugin');
+const CopyWebpackPlugin = require("copy-webpack-plugin");
 
 let prod = "production";
 let dev = "development";
@@ -137,11 +137,7 @@ if (isProd === true) {
                 ],
             },
 
-            plugins: [
-                new CopyWebpackPlugin([
-                    { from: 'static' }
-                ]),
-            ],
+            plugins: [new CopyWebpackPlugin([{ from: "static" }])],
         });
     };
 }

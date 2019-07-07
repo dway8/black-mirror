@@ -80,9 +80,7 @@ app.post("/mmi", (req, res) => {
 app.get("/api/forecast/:coords", (req, res) => {
     request.get(
         {
-            url: `https://api.darksky.net/forecast/537e53749d634ff0707fa5acadb2eab3/${
-                req.params.coords
-            }`,
+            url: `https://api.darksky.net/forecast/537e53749d634ff0707fa5acadb2eab3/${req.params.coords}`,
             qs: req.query,
             json: true,
             headers: { "User-Agent": "request" },
