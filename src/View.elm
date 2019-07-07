@@ -71,8 +71,8 @@ viewHeader { zone, now, window, saint, weather } =
             [ viewSaint window saint
             , row
                 [ centerY, Font.size (windowRatio window 60), alignRight ]
-                [ el [ Font.bold ] <| text (Round.round 1 weather.temperature ++ "°")
-                , viewWeatherIcon weather.icon
+                [ el [ Font.bold, moveRight (toFloat (windowRatio window 20)) ] <| text (Round.round 1 weather.temperature ++ "°")
+                , viewWeatherIcon window weather.icon
                 ]
             ]
         ]
@@ -101,144 +101,45 @@ viewSaint window saint =
         ]
 
 
-viewWeatherIcon : String -> Element Msg
-viewWeatherIcon icon =
-    image [ paddingEach { left = 5, right = 0, top = 0, bottom = 0 } ] { src = getSvgIcon icon, description = "" }
+viewWeatherIcon : Window -> String -> Element Msg
+viewWeatherIcon window icon =
+    image [ width (px (windowRatio window 100)) ] { src = getSvgIcon icon, description = "" }
 
 
 viewCountsMybData : Window -> MybData -> Element Msg
-viewCountsMybData window data =
+viewCountsMybData window { todayUsers, totalUsers, todayOrders, totalOrders, todayExhibitors, totalExhibitors, todayClients, totalClients, todayProdOccurrences, totalProdOccurrences, todayOpenOccurrences, totalOpenOccurrences } =
     row
         [ width fill, spaceEvenly ]
         [ column
             [ spacing 50, alignLeft, centerY ]
-            [ viewUsers window data
-            , viewOrders window data
-            , viewExhibitors window data
+            [ viewGenericCount window todayUsers totalUsers "Orga."
+            , viewGenericCount window todayOrders totalOrders "Résa"
+            , viewGenericCount window todayExhibitors totalExhibitors "Exposants"
             ]
         , el [ Border.widthEach { left = 1, top = 0, bottom = 0, right = 0 }, Border.solid, centerX, centerY, height fill ] <| none
         , column [ spacing 50, alignLeft, centerY ]
-            [ viewClients window data
-            , viewProdOccurrences window data
-            , viewOpenOccurrences window data
+            [ viewGenericCount window todayClients totalClients "Clients"
+            , viewGenericCount window todayProdOccurrences totalProdOccurrences "Éd. prod"
+            , viewGenericCount window todayOpenOccurrences totalOpenOccurrences "Éd. ouvertes"
             ]
         ]
 
 
-viewUsers : Window -> MybData -> Element Msg
-viewUsers window data =
+viewGenericCount : Window -> Int -> Int -> String -> Element Msg
+viewGenericCount window todayCount totalCount label =
     row
         [ spacing 30, centerY, width fill ]
-        [ el [ width <| fillPortion 1, Font.size (windowRatio window 80), Font.bold ] <| el [ alignRight ] <| text ("+" ++ String.fromInt data.todayUsers)
+        [ el [ width <| fillPortion 1, Font.size (windowRatio window 80), Font.bold ] <| el [ alignRight ] <| text ("+" ++ String.fromInt todayCount)
         , el [ width <| fillPortion 2 ] <|
             column
                 []
                 [ el [ Font.size (windowRatio window 34), Font.bold ] <|
-                    (data.totalUsers
+                    (totalCount
                         |> toFloat
                         |> FN.format { frenchLocale | decimals = 0 }
                         |> text
                     )
-                , el [ Font.light, Font.size (windowRatio window 26) ] <| text "Orga."
-                ]
-        ]
-
-
-viewOrders : Window -> MybData -> Element Msg
-viewOrders window data =
-    row
-        [ spacing 30, centerY, width fill ]
-        [ el [ width <| fillPortion 1, Font.size (windowRatio window 80), Font.bold ] <| el [ alignRight ] <| text ("+" ++ String.fromInt data.todayOrders)
-        , el [ width <| fillPortion 2 ] <|
-            column
-                []
-                [ el [ Font.size (windowRatio window 34), Font.bold ] <|
-                    (data.totalOrders
-                        |> toFloat
-                        |> FN.format { frenchLocale | decimals = 0 }
-                        |> text
-                    )
-                , el [ Font.light, Font.size (windowRatio window 26) ] <| text "Résa"
-                ]
-        ]
-
-
-viewExhibitors : Window -> MybData -> Element Msg
-viewExhibitors window data =
-    row
-        [ spacing 30, centerY, width fill ]
-        [ el [ width <| fillPortion 1, Font.size (windowRatio window 80), Font.bold ] <| el [ alignRight ] <| text ("+" ++ String.fromInt data.todayExhibitors)
-        , el [ width <| fillPortion 2 ] <|
-            column
-                []
-                [ el [ Font.size (windowRatio window 34), Font.bold ] <|
-                    (data.totalExhibitors
-                        |> toFloat
-                        |> FN.format { frenchLocale | decimals = 0 }
-                        |> text
-                    )
-                , el [ Font.light, Font.size (windowRatio window 26) ] <| text "Exposants"
-                ]
-        ]
-
-
-viewClients : Window -> MybData -> Element Msg
-viewClients window data =
-    row
-        [ spacing 30, centerY, width fill ]
-        [ el [ width <| fillPortion 1, Font.size (windowRatio window 80), Font.bold ] <| el [ alignRight ] <| text ("+" ++ String.fromInt data.todayClients)
-        , el [ width <| fillPortion 2 ] <|
-            column
-                []
-                [ el [ Font.size (windowRatio window 34), Font.bold ] <|
-                    (data.totalClients
-                        |> toFloat
-                        |> FN.format { frenchLocale | decimals = 0 }
-                        |> text
-                    )
-                , el [ Font.light, Font.size (windowRatio window 26) ] <| text "Clients"
-                ]
-        ]
-
-
-
--- viewGenericCount
-
-
-viewProdOccurrences : Window -> MybData -> Element Msg
-viewProdOccurrences window data =
-    row
-        [ spacing 30, centerY, width fill ]
-        [ el [ width <| fillPortion 1, Font.size (windowRatio window 80), Font.bold ] <| el [ alignRight ] <| text ("+" ++ String.fromInt data.todayProdOccurrences)
-        , el [ width <| fillPortion 2 ] <|
-            column
-                []
-                [ el [ Font.size (windowRatio window 34), Font.bold ] <|
-                    (data.totalProdOccurrences
-                        |> toFloat
-                        |> FN.format { frenchLocale | decimals = 0 }
-                        |> text
-                    )
-                , el [ Font.light, Font.size (windowRatio window 26) ] <| text "Éd. prod"
-                ]
-        ]
-
-
-viewOpenOccurrences : Window -> MybData -> Element Msg
-viewOpenOccurrences window data =
-    row
-        [ spacing 30, centerY, width fill ]
-        [ el [ width <| fillPortion 1, Font.size (windowRatio window 80), Font.bold ] <| el [ alignRight ] <| text ("+" ++ String.fromInt data.todayOpenOccurrences)
-        , el [ width <| fillPortion 2 ] <|
-            column
-                []
-                [ el [ Font.size (windowRatio window 34), Font.bold ] <|
-                    (data.totalOpenOccurrences
-                        |> toFloat
-                        |> FN.format { frenchLocale | decimals = 0 }
-                        |> text
-                    )
-                , el [ Font.light, Font.size (windowRatio window 26) ] <| text "Éd. ouvertes"
+                , el [ Font.light, Font.size (windowRatio window 26) ] <| text label
                 ]
         ]
 
@@ -345,4 +246,4 @@ getSvgIcon icon =
                 _ ->
                     "Sun"
     in
-    "img/" ++ path ++ ".svg"
+    "climacons/" ++ path ++ ".svg"
