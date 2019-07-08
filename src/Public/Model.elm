@@ -1,9 +1,11 @@
-module Public.Model exposing (ImageSize, Media, Model, Msg(..), MybData, Tweet, Weather, Window, fetchLastTweet, fetchMessagesCmd, fetchMybData, fetchWeather, getTimeNow)
+module Public.Model exposing (ImageSize, Media, Model, Msg(..), Tweet, Weather, Window, fetchLastTweet, fetchMessagesCmd, fetchMybData, fetchWeather, getTimeNow)
 
 import Http
 import Json.Decode as D
 import Json.Decode.Pipeline as P
 import Model exposing (Message)
+import Public.MybData as MybData exposing (MybData)
+import Public.Ports exposing (InfoForElm)
 import RemoteData as RD exposing (RemoteData(..), WebData)
 import Task
 import Time exposing (Posix, Zone)
@@ -54,24 +56,6 @@ type alias ImageSize =
     }
 
 
-type alias MybData =
-    { todayUsers : Int
-    , totalUsers : Int
-    , todayOrders : Int
-    , totalOrders : Int
-    , todayExhibitors : Int
-    , totalExhibitors : Int
-    , todayClients : Int
-    , totalClients : Int
-    , todayProdOccurrences : Int
-    , totalProdOccurrences : Int
-    , todayOpenOccurrences : Int
-    , totalOpenOccurrences : Int
-    , avgCart : Int
-    , va : Int
-    }
-
-
 
 -- MESSAGES
 
@@ -89,6 +73,7 @@ type Msg
     | InitSaint ( Posix, Zone )
     | FetchMessagesResponse (WebData (List Message))
     | AnimateMessagesAndTweet
+    | InfoFromOutside InfoForElm
 
 
 getTimeNow : Cmd Msg
@@ -119,7 +104,7 @@ fetchMybData : Cmd Msg
 fetchMybData =
     Http.get
         { url = "/api/myb_data"
-        , expect = Http.expectJson (RD.fromResult >> FetchMybDataResponse) <| mybDataDecoder
+        , expect = Http.expectJson (RD.fromResult >> FetchMybDataResponse) <| MybData.mybDataDecoder
         }
 
 
@@ -173,25 +158,6 @@ imageSizeDecoder =
     D.succeed ImageSize
         |> P.required "w" D.float
         |> P.required "h" D.float
-
-
-mybDataDecoder : D.Decoder MybData
-mybDataDecoder =
-    D.succeed MybData
-        |> P.required "todayUsers" D.int
-        |> P.required "totalUsers" D.int
-        |> P.required "todayOrders" D.int
-        |> P.required "totalOrders" D.int
-        |> P.required "todayExhibitors" D.int
-        |> P.required "totalExhibitors" D.int
-        |> P.required "todayClients" D.int
-        |> P.required "totalClients" D.int
-        |> P.required "todayProdOccurrences" D.int
-        |> P.required "totalProdOccurrences" D.int
-        |> P.required "todayOpenOccurrences" D.int
-        |> P.required "totalOpenOccurrences" D.int
-        |> P.required "avgCart" D.int
-        |> P.required "va" D.int
 
 
 fetchMessagesCmd : Cmd Msg

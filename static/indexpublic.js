@@ -1,6 +1,8 @@
 "use strict";
 
 var { Elm } = require("../src/Public/Main.elm");
+var createEventSource = require("../libraries/sse");
+
 var node = document.getElementById("content");
 
 var now = new Date().getTime();
@@ -18,10 +20,11 @@ app.ports.infoForOutside.subscribe(function(elmData) {
     let audio;
     switch (tag) {
         case "playCashRegister":
-            audio = new Audio(
-                "http://54.36.52.224:42424/sounds/cashregister.mp3"
-            );
-            audio.play();
+            //TODO
+            // audio = new Audio(
+            //     "http://54.36.52.224:42424/sounds/cashregister.mp3"
+            // );
+            // audio.play();
             break;
         case "playFanfare":
             audio = new Audio("http://54.36.52.224:42424/sounds/fanfare.wav");
@@ -37,3 +40,6 @@ app.ports.infoForOutside.subscribe(function(elmData) {
             break;
     }
 });
+
+var es;
+createEventSource(es, app, "/api/sse");

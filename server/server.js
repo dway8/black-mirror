@@ -9,6 +9,8 @@ const low = require("lowdb");
 const lodashId = require("lodash-id");
 const path = require("path");
 const auth = require("basic-auth");
+const SSE = require("express-sse");
+const sse = new SSE(["Connected!"]);
 
 const FileSync = require("lowdb/adapters/FileSync");
 const adapter = new FileSync("db.json");
@@ -127,6 +129,10 @@ app.post("/mmi", (req, res) => {
     } else if (params.new_open_occurrence) {
         handleNewOpenOccurrence();
     }
+
+    const currentMybData = getCurrentMybData();
+
+    sse.send(currentMybData, "MYB-event");
 });
 
 app.get("/api/messages", (req, res) => {
@@ -136,6 +142,8 @@ app.get("/api/messages", (req, res) => {
         .value();
     res.json(messages);
 });
+
+app.get("/api/sse", sse.init);
 
 ////// ADMIN ROUTES /////////////////
 

@@ -3,6 +3,7 @@ module Public.Main exposing (main)
 import Browser
 import Public.Ephemeris as Ephemeris
 import Public.Model exposing (Model, Msg(..), Weather, Window, fetchLastTweet, fetchMessagesCmd, fetchMybData, fetchWeather, getTimeNow)
+import Public.Ports as Ports exposing (InfoForElm(..), InfoForOutside(..))
 import Public.View as View
 import RemoteData as RD exposing (RemoteData(..))
 import Task
@@ -66,6 +67,7 @@ subscriptions model =
         , Time.every (15 * 60 * 1000) <| always FetchLastTweet
         , Time.every (60 * 60 * 1000) UpdateSaint
         , Time.every (6 * 1000) <| always AnimateMessagesAndTweet
+        , Ports.getInfoFromOutside InfoFromOutside (always NoOp)
         ]
 
 
@@ -124,6 +126,13 @@ update msg model =
 
                 _ ->
                     ( model, Cmd.none )
+
+        InfoFromOutside info ->
+            case info of
+                ReceivedMYBEvent mybData ->
+                    ( { model | mybData = Success mybData }
+                    , Ports.sendInfoOutside PlayCashRegister
+                    )
 
         _ ->
             ( model, Cmd.none )

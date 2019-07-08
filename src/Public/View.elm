@@ -10,7 +10,8 @@ import FormatNumber as FN
 import FormatNumber.Locales exposing (frenchLocale)
 import List.Extra as LE
 import Model exposing (Message)
-import Public.Model exposing (Model, Msg, MybData, Tweet, Window)
+import Public.Model exposing (Model, Msg, Tweet, Window)
+import Public.MybData exposing (MybData)
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
 import Style exposing (blackColor, whiteColor, windowRatio)
