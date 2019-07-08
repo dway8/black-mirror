@@ -17,15 +17,12 @@ var app = Elm.Public.Main.init({
 
 app.ports.infoForOutside.subscribe(function(elmData) {
     let tag = elmData.tag;
-    let audio;
     switch (tag) {
         case "playCashRegister":
-            audio = new Audio("sounds/cashregister.mp3");
-            audio.play();
+            playAudio("sounds/cashregister.mp3");
             break;
         case "playKnock":
-            audio = new Audio("sounds/knock.wav");
-            audio.play();
+            playAudio("sounds/knock.wav");
             break;
 
         // case "playFanfare":
@@ -38,6 +35,20 @@ app.ports.infoForOutside.subscribe(function(elmData) {
             break;
     }
 });
+
+function playAudio(url) {
+    const audio = new Audio(url);
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+        playPromise
+            .then(() => {
+                // Audio started!
+            })
+            .catch(e => {
+                console.log("Error playing audio", e);
+            });
+    }
+}
 
 var es;
 createEventSource(es, app, "/api/sse");
