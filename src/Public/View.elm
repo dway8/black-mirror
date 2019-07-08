@@ -110,7 +110,7 @@ viewSaint : Window -> String -> Element Msg
 viewSaint window saint =
     row
         [ spacing 30, Font.bold, Font.size (windowRatio window 24) ]
-        [ el [] <| html <| Utils.icon "zmdi zmdi-chevron-right zmdi-hc-lg"
+        [ el [] <| Utils.icon "chevron-right zmdi-hc-lg"
         , el [] <| text saint
         ]
 
@@ -166,7 +166,7 @@ viewMoneyMybData window data =
         [ spacing (windowRatio window 40)
         , centerX
         ]
-        [ el [ Font.size (windowRatio window 34) ] <| html <| Utils.icon "zmdi zmdi-shopping-cart zmdi-hc-4x"
+        [ el [ Font.size (windowRatio window 34) ] <| Utils.icon "shopping-cart zmdi-hc-4x"
         , column
             [ spacing 15 ]
             [ el [ Font.size (windowRatio window 46), Font.bold ] <|
@@ -179,7 +179,7 @@ viewMoneyMybData window data =
                 )
             , row
                 [ spacing 40, centerY ]
-                [ el [ Font.size (windowRatio window 34) ] <| html <| Utils.icon "zmdi zmdi-shopping-basket zmdi-hc-lg"
+                [ el [ Font.size (windowRatio window 34) ] <| Utils.icon "shopping-basket zmdi-hc-lg"
                 , el [ Font.size (windowRatio window 40), Font.light ] <|
                     (data.avgCart
                         |> String.fromInt
@@ -237,7 +237,7 @@ viewTweet tweet =
                                 { src = photo.mediaUrl, description = "" }
 
                     _ ->
-                        el [] <| html <| Utils.icon "zmdi zmdi-twitter zmdi-hc-5x"
+                        el [] <| Utils.icon "twitter zmdi-hc-5x"
                 , paragraph [ Font.light ] [ text t.text ]
                 ]
 

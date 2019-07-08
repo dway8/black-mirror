@@ -1,8 +1,9 @@
-module Utils exposing (getAt, icon, isBigPortrait, isDesktop, styledIcon, ucfirst)
+module Utils exposing (getAt, icon, isBigPortrait, isDesktop, ucfirst)
 
 import Char
-import Html exposing (Html, i)
-import Html.Attributes exposing (..)
+import Element exposing (Element, html)
+import Html
+import Html.Attributes as HA
 import Public.Model exposing (Window)
 
 
@@ -16,20 +17,9 @@ ucfirst string =
             ""
 
 
-icon : String -> Html a
-icon str =
-    styledIcon [] str
-
-
-styledIcon : List ( String, String ) -> String -> Html a
-styledIcon styles str =
-    i
-        ([ class str
-         , attribute "aria-hidden" "true"
-         ]
-            ++ (styles |> List.map (\tuple -> style (Tuple.first tuple) (Tuple.second tuple)))
-        )
-        []
+icon : String -> Element msg
+icon ico =
+    html <| Html.i [ HA.class ("zmdi zmdi-" ++ ico) ] []
 
 
 isBigPortrait : Window -> Bool

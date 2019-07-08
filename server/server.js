@@ -139,30 +139,49 @@ app.get("/api/messages", (req, res) => {
 
 ////// ADMIN ROUTES /////////////////
 
-app.get("/api/admin/messages", requireLoggedUser, (req, res) => {
-    const messages = db.get("messages").value();
-    res.json(messages);
-});
-
-app.post("/api/admin/messages", requireLoggedUser, (req, res) => {
-    try {
-        const { title, content } = req.body;
-        winston.verbose("Creating a new message with params", {
-            title,
-            content,
-        });
-        const newMessage = db
-            .get("messages")
-            .insert({
+app.route("/api/admin/messages")
+    .all(requireLoggedUser)
+    .get((req, res) => {
+        const messages = db.get("messages").value();
+        res.json(messages);
+    })
+    .post((req, res) => {
+        try {
+            const { title, content } = req.body;
+            winston.verbose("Creating a new message with params", {
                 title,
                 content,
-                createdAt: new Date().getTime(),
-                active: true,
-            })
+            });
+            const newMessage = db
+                .get("messages")
+                .insert({
+                    title,
+                    content,
+                    createdAt: new Date().getTime(),
+                    active: true,
+                })
+                .write();
+
+            res.json({ success: true, data: newMessage });
+        } catch (e) {
+            winston.error("Error while creating a message", { e });
+            res.json({ success: false, error: "Une erreur s'est produite" });
+        }
+    });
+
+app.get("/api/admin/messages/archive/:id", requireLoggedUser, (req, res) => {
+    try {
+        const id = req.params.id;
+        winston.verbose(`Archiving message ${id}`);
+        const newMessage = db
+            .get("messages")
+            .getById(id)
+            .assign({ active: false })
             .write();
+
         res.json({ success: true, data: newMessage });
     } catch (e) {
-        winston.error("Error while creating a message", { e });
+        winston.error("Error while archiving a message", { e });
         res.json({ success: false, error: "Une erreur s'est produite" });
     }
 });
@@ -410,3 +429,8 @@ function resetDayMybData() {
         .insert(newData)
         .write();
 }
+
+process.on("SIGINT", () => {
+    console.log("Bye bye!");
+    process.exit();
+});

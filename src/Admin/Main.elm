@@ -13,6 +13,7 @@ import Model exposing (Message)
 import RemoteData as RD exposing (RemoteData(..), WebData)
 import Style exposing (..)
 import Time
+import Utils
 
 
 main : Program Flags Model Msg
@@ -50,6 +51,8 @@ type Msg
     | UpdateMessageContent String
     | SaveMessage
     | SaveMessageResponse (WebData (ApiResponse Message))
+    | ArchiveMessage Message
+    | ArchiveMessageResponse (WebData (ApiResponse Message))
 
 
 init : Flags -> ( Model, Cmd Msg )
@@ -140,7 +143,25 @@ viewMessages messages =
     else
         column []
             (messages
-                |> List.map (\message -> row [] [ text message.title, text message.content ])
+                |> List.map
+                    (\message ->
+                        row [ spacing 10 ]
+                            [ el [ Font.bold ] <| text message.title
+                            , text message.content
+                            , if message.active then
+                                Input.button [ padding 8, Border.rounded 4, Background.color mediumGreyColor, Font.color whiteColor, alignBottom ]
+                                    { label =
+                                        row [ spacing 5, Font.size 16 ]
+                                            [ el [] <| Utils.icon "archive"
+                                            , el [] <| text "Archiver"
+                                            ]
+                                    , onPress = Just <| ArchiveMessage message
+                                    }
+
+                              else
+                                el [ Font.color mediumGreyColor ] <| text "Archivé"
+                            ]
+                    )
             )
 
 
@@ -207,6 +228,31 @@ update msg model =
                     --TODO display error
                     ( model, Cmd.none )
 
+        ArchiveMessage message ->
+            ( model, archiveMessageCmd message )
+
+        ArchiveMessageResponse response ->
+            case response of
+                Success (RespOk message) ->
+                    let
+                        newMessages =
+                            model.messages
+                                |> RD.map
+                                    (List.map
+                                        (\m ->
+                                            if m.id == message.id then
+                                                message
+
+                                            else
+                                                m
+                                        )
+                                    )
+                    in
+                    ( { model | messages = newMessages }, Cmd.none )
+
+                _ ->
+                    ( model, Cmd.none )
+
 
 initMessage : Message
 initMessage =
@@ -225,6 +271,15 @@ saveMessageCmd message =
         , body = encodeMessage message |> Http.jsonBody
         , expect =
             Http.expectJson (RD.fromResult >> SaveMessageResponse) (apiResponseDecoder Model.messageDecoder)
+        }
+
+
+archiveMessageCmd : Message -> Cmd Msg
+archiveMessageCmd message =
+    Http.get
+        { url = "/api/admin/messages/archive/" ++ message.id
+        , expect =
+            Http.expectJson (RD.fromResult >> ArchiveMessageResponse) (apiResponseDecoder Model.messageDecoder)
         }
 
 
