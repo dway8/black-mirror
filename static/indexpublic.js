@@ -20,20 +20,18 @@ app.ports.infoForOutside.subscribe(function(elmData) {
     let audio;
     switch (tag) {
         case "playCashRegister":
-            //TODO
-            // audio = new Audio(
-            //     "http://54.36.52.224:42424/sounds/cashregister.mp3"
-            // );
-            // audio.play();
-            break;
-        case "playFanfare":
-            audio = new Audio("http://54.36.52.224:42424/sounds/fanfare.wav");
+            audio = new Audio("sounds/cashregister.mp3");
             audio.play();
             break;
         case "playKnock":
-            audio = new Audio("http://54.36.52.224:42424/sounds/knock.wav");
+            audio = new Audio("sounds/knock.wav");
             audio.play();
             break;
+
+        // case "playFanfare":
+        //     audio = new Audio("sounds/fanfare.wav");
+        //     audio.play();
+        //     break;
 
         default:
             console.log("Unrecognized type");

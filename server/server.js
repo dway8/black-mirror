@@ -113,26 +113,33 @@ app.get("/api/myb_data", (req, res) => {
 
 app.post("/mmi", (req, res) => {
     res.json({ message: "OK" });
-    var params = req.body;
+    const params = req.body;
     winston.verbose("Received params from MYB", params);
 
+    let event;
     if (params.new_user) {
         handleNewUser();
+        event = "new_user";
     } else if (params.new_order && params.amount) {
         handleNewOrder(params);
+        event = "new_order";
     } else if (params.order_cancelled && params.amount) {
         handleOrderCancelled(params);
+        event = "order_cancelled";
     } else if (params.new_exhibitor) {
         handleNewExhibitor();
+        event = "new_exhibitor";
     } else if (params.new_prod_occurrence) {
         handleNewProdOccurrence(params);
+        event = "new_prod_occurrence";
     } else if (params.new_open_occurrence) {
         handleNewOpenOccurrence();
+        event = "new_open_occurrence";
     }
 
     const currentMybData = getCurrentMybData();
 
-    sse.send(currentMybData, "MYB-event");
+    sse.send({ data: currentMybData, event }, "MYB-event");
 });
 
 app.get("/api/messages", (req, res) => {

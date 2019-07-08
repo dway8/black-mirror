@@ -61,11 +61,9 @@ type alias Flags =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ Time.every (10 * 1000) <| always FetchMybData
-        , Time.every (60 * 1000) (\time -> UpdateTime ( time, model.zone ))
+        [ Time.every (60 * 1000) (\time -> UpdateTime ( time, model.zone ))
         , Time.every (15 * 60 * 1000) <| always FetchWeather
         , Time.every (15 * 60 * 1000) <| always FetchLastTweet
-        , Time.every (60 * 60 * 1000) UpdateSaint
         , Time.every (6 * 1000) <| always AnimateMessagesAndTweet
         , Ports.getInfoFromOutside InfoFromOutside (always NoOp)
         ]
@@ -129,9 +127,9 @@ update msg model =
 
         InfoFromOutside info ->
             case info of
-                ReceivedMYBEvent mybData ->
+                ReceivedMYBEvent mybData event ->
                     ( { model | mybData = Success mybData }
-                    , Ports.sendInfoOutside PlayCashRegister
+                    , Ports.sendInfoOutside <| PlaySound event
                     )
 
         _ ->
