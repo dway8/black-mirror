@@ -57,17 +57,22 @@ view model =
                         , centerX
                         ]
                         (viewHeader model
-                            :: (case model.mybData of
-                                    Success data ->
-                                        [ viewCountsMybData model.window data
-                                        , viewMoneyMybData model.window data
-                                        ]
+                            :: (if DateUtils.isNightTime model.zone model.now then
+                                    [ el [ centerX, centerY, Font.size (windowRatio model.window 150) ] <| Utils.icon "notifications-paused" ]
 
-                                    _ ->
-                                        [ text "Chargement..." ]
+                                else
+                                    (case model.mybData of
+                                        Success data ->
+                                            [ viewCountsMybData model.window data
+                                            , viewMoneyMybData model.window data
+                                            ]
+
+                                        _ ->
+                                            [ el [ centerX, centerY ] <| text "Chargement..." ]
+                                    )
+                                        ++ [ viewMessagesAndTweet model.window model.messageCursor model.messages model.lastTweet
+                                           ]
                                )
-                            ++ [ viewMessagesAndTweet model.window model.messageCursor model.messages model.lastTweet
-                               ]
                         )
     }
 

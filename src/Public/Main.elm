@@ -1,13 +1,12 @@
 module Public.Main exposing (main)
 
 import Browser
-import Public.Ephemeris as Ephemeris
-import Public.Model exposing (Model, Msg(..), Weather, Window, fetchLastTweet, fetchMessagesCmd, fetchMybData, fetchWeather, getTimeNow)
+import DateUtils
+import Public.Model exposing (Model, Msg(..), Weather, Window, fetchLastTweet, fetchMessagesCmd, fetchMybData, fetchWeather, initSaint, initTime)
 import Public.Ports as Ports exposing (InfoForElm(..), InfoForOutside(..))
 import Public.View as View
 import RemoteData as RD exposing (RemoteData(..))
-import Task
-import Time exposing (Posix, Zone)
+import Time
 
 
 main : Program Flags Model Msg
@@ -32,15 +31,7 @@ init flags =
       , messages = NotAsked
       , messageCursor = 0
       }
-    , Cmd.batch
-        [ fetchMybData
-        , getTimeNow
-        , fetchWeather
-        , fetchLastTweet
-        , Task.map2 (\time zone -> ( time, zone )) Time.now Time.here
-            |> Task.perform InitSaint
-        , fetchMessagesCmd
-        ]
+    , initTime
     )
 
 
@@ -59,19 +50,45 @@ type alias Flags =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions model =
+subscriptions { zone, now } =
     Sub.batch
-        [ Time.every (60 * 1000) (\time -> UpdateTime ( time, model.zone ))
-        , Time.every (15 * 60 * 1000) <| always FetchWeather
-        , Time.every (15 * 60 * 1000) <| always FetchLastTweet
-        , Time.every (6 * 1000) <| always AnimateMessagesAndTweet
-        , Ports.getInfoFromOutside InfoFromOutside (always NoOp)
-        ]
+        ([ Time.every (60 * 1000) (\time -> UpdateTime time)
+         , Time.every (60 * 60 * 1000)
+            (\time ->
+                if Time.toHour zone time == 0 then
+                    UpdateSaint
+
+                else
+                    NoOp
+            )
+         , Time.every (60 * 60 * 1000)
+            (\time ->
+                if Time.toHour zone time == 8 then
+                    MorningFetchMybData
+
+                else
+                    NoOp
+            )
+         ]
+            ++ (if DateUtils.isNightTime zone now then
+                    []
+
+                else
+                    [ Time.every (15 * 60 * 1000) <| always FetchWeather
+                    , Time.every (15 * 60 * 1000) <| always FetchLastTweet
+                    , Time.every (6 * 1000) <| always AnimateMessagesAndTweet
+                    , Ports.getInfoFromOutside InfoFromOutside (always NoOp)
+                    ]
+               )
+        )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        NoOp ->
+            ( model, Cmd.none )
+
         FetchWeatherResponse response ->
             case response of
                 Success w ->
@@ -87,15 +104,6 @@ update msg model =
 
         FetchMybDataResponse response ->
             ( { model | mybData = response }, Cmd.none )
-
-        InitSaint ( now, zone ) ->
-            let
-                newSaint =
-                    getNewSaint zone now |> Maybe.withDefault model.saint
-            in
-            ( { model | saint = newSaint }
-            , Cmd.none
-            )
 
         FetchMessagesResponse response ->
             ( { model | messages = response }, Cmd.none )
@@ -132,18 +140,30 @@ update msg model =
                     , Ports.sendInfoOutside <| PlaySound event
                     )
 
-        _ ->
+        InitTime ( now, zone ) ->
+            let
+                cmds =
+                    if DateUtils.isNightTime zone now then
+                        Cmd.none
+
+                    else
+                        Cmd.batch [ fetchMybData, fetchWeather, fetchLastTweet, fetchMessagesCmd ]
+            in
+            ( { model | now = now, zone = zone }, cmds )
+                |> initSaint
+
+        UpdateTime now ->
+            ( { model | now = now }, Cmd.none )
+
+        UpdateSaint ->
+            ( model, Cmd.none )
+                |> initSaint
+
+        MorningFetchMybData ->
+            ( model, fetchMybData )
+
+        FetchWeather ->
             ( model, Cmd.none )
 
-
-getNewSaint : Zone -> Posix -> Maybe String
-getNewSaint zone now =
-    Ephemeris.getDaySaint zone now
-        |> Maybe.map
-            (\( name, prefix ) ->
-                if prefix == "" then
-                    name
-
-                else
-                    prefix ++ " " ++ name
-            )
+        FetchLastTweet ->
+            ( model, Cmd.none )

@@ -1,4 +1,4 @@
-module Utils exposing (getAt, icon, isBigPortrait, isDesktop, ucfirst)
+module Utils exposing (icon, isBigPortrait, isDesktop, ucfirst)
 
 import Char
 import Element exposing (Element, html)
@@ -30,8 +30,3 @@ isBigPortrait window =
 isDesktop : Window -> Bool
 isDesktop window =
     window.width > window.height
-
-
-getAt : List a -> Int -> Maybe a
-getAt xs idx =
-    List.head <| List.drop idx xs

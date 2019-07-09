@@ -1,7 +1,6 @@
 module Public.Ephemeris exposing (getDaySaint)
 
 import Time exposing (Month(..), Posix, Zone)
-import Utils
 
 
 getDaySaint : Zone -> Posix -> Maybe ( String, String )
@@ -411,5 +410,6 @@ getDaySaint zone now =
                     , ( "Sylvestre", "Saint" )
                     ]
     in
-    Utils.getAt list
-        (Time.toDay zone now |> (\day -> day - 1))
+    list
+        |> List.drop (Time.toDay zone now |> (\day -> day - 1))
+        |> List.head

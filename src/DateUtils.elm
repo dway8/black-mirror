@@ -1,4 +1,4 @@
-module DateUtils exposing (dateDecoder, dayAndMonth, dayOfWeek, time)
+module DateUtils exposing (dateDecoder, dayAndMonth, dayOfWeek, isNightTime, time)
 
 import DateFormat as DF
 import DateFormat.Language as DFL exposing (english)
@@ -114,3 +114,12 @@ dateDecoder =
     D.int
         |> D.andThen
             (\i -> D.succeed <| Time.millisToPosix i)
+
+
+isNightTime : Zone -> Posix -> Bool
+isNightTime zone now =
+    let
+        hour =
+            Time.toHour zone now
+    in
+    hour >= 23 || hour < 8

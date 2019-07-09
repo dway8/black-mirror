@@ -1,9 +1,10 @@
-module Public.Model exposing (ImageSize, Media, Model, Msg(..), Tweet, Weather, Window, fetchLastTweet, fetchMessagesCmd, fetchMybData, fetchWeather, getTimeNow)
+module Public.Model exposing (ImageSize, Media, Model, Msg(..), Tweet, Weather, Window, fetchLastTweet, fetchMessagesCmd, fetchMybData, fetchWeather, initSaint, initTime)
 
 import Http
 import Json.Decode as D
 import Json.Decode.Pipeline as P
 import Model exposing (Message)
+import Public.Ephemeris as Ephemeris
 import Public.MybData as MybData exposing (MybData)
 import Public.Ports exposing (InfoForElm)
 import RemoteData as RD exposing (RemoteData(..), WebData)
@@ -62,24 +63,49 @@ type alias ImageSize =
 
 type Msg
     = NoOp
-    | FetchMybData
-    | UpdateTime ( Posix, Zone )
+    | InitTime ( Posix, Zone )
+    | UpdateTime Posix
+    | MorningFetchMybData
     | FetchMybDataResponse (WebData MybData)
     | FetchWeather
     | FetchWeatherResponse (WebData Weather)
     | FetchLastTweet
     | FetchLastTweetResponse (WebData Tweet)
-    | UpdateSaint Posix
-    | InitSaint ( Posix, Zone )
+    | UpdateSaint
     | FetchMessagesResponse (WebData (List Message))
     | AnimateMessagesAndTweet
     | InfoFromOutside InfoForElm
 
 
-getTimeNow : Cmd Msg
-getTimeNow =
+initTime : Cmd Msg
+initTime =
     Task.map2 (\time zone -> ( time, zone )) Time.now Time.here
-        |> Task.perform UpdateTime
+        |> Task.perform InitTime
+
+
+initSaint : ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
+initSaint =
+    Tuple.mapFirst
+        (\({ zone, now } as model) ->
+            let
+                newSaint =
+                    getNewSaint zone now |> Maybe.withDefault model.saint
+            in
+            { model | saint = newSaint }
+        )
+
+
+getNewSaint : Zone -> Posix -> Maybe String
+getNewSaint zone now =
+    Ephemeris.getDaySaint zone now
+        |> Maybe.map
+            (\( name, prefix ) ->
+                if prefix == "" then
+                    name
+
+                else
+                    prefix ++ " " ++ name
+            )
 
 
 fetchWeather : Cmd Msg
