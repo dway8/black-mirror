@@ -17,8 +17,9 @@ type alias MybData =
     , totalProdOccurrences : Int
     , todayOpenOccurrences : Int
     , totalOpenOccurrences : Int
+    , todayVA : Int
+    , totalVA : Int
     , avgCart : Int
-    , va : Int
     }
 
 
@@ -37,5 +38,6 @@ mybDataDecoder =
         |> P.required "totalProdOccurrences" D.int
         |> P.required "todayOpenOccurrences" D.int
         |> P.required "totalOpenOccurrences" D.int
+        |> P.required "todayVA" D.int
+        |> P.required "totalVA" D.int
         |> P.required "avgCart" D.int
-        |> P.required "va" D.int

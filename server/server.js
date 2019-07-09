@@ -47,7 +47,7 @@ app.use(bodyParser.urlencoded({ extended: false, limit: "50mb" }));
 app.use(bodyParser.json({ limit: "50mb" }));
 app.use(bodyParser.raw({ type: "text/plain" }));
 
-var forceReadDB = function(req, res, next) {
+const forceReadDB = function(req, res, next) {
     db.read();
     next();
 };
@@ -243,14 +243,16 @@ function handleNewOrder(params) {
         totalOrders,
         todayExhibitors,
         totalExhibitors,
-        va,
+        todayVA,
+        totalVA,
         avgCart,
     } = _.cloneDeep(getCurrentMybData());
 
     todayOrders++;
     totalOrders++;
-    va = va + parseFloat(params.amount);
-    avgCart = Math.round(va / 100 / totalOrders);
+    todayVA = todayVA + parseFloat(params.amount);
+    totalVA = totalVA + parseFloat(params.amount);
+    avgCart = Math.round(totalVA / 100 / totalOrders);
 
     if (params.is_new_exhibitor) {
         todayExhibitors++;
@@ -263,7 +265,8 @@ function handleNewOrder(params) {
             totalOrders,
             todayExhibitors,
             totalExhibitors,
-            va,
+            todayVA,
+            totalVA,
             avgCart,
         },
         id
@@ -271,20 +274,29 @@ function handleNewOrder(params) {
 }
 
 function handleOrderCancelled(params) {
-    let { id, todayOrders, totalOrders, va, avgCart } = _.cloneDeep(
-        getCurrentMybData()
-    );
+    let {
+        id,
+        todayOrders,
+        totalOrders,
+        todayVA,
+        totalVA,
+        avgCart,
+    } = _.cloneDeep(getCurrentMybData());
 
     totalOrders--;
-    va = va - parseFloat(params.amount);
-    avgCart = Math.round(va / 100 / totalOrders);
+    totalVA = totalVA - parseFloat(params.amount);
+    avgCart = Math.round(totalVA / 100 / totalOrders);
 
     const orderDate = new Date(params.date * 1000);
     if (orderDate >= getTodayMidnight()) {
+        todayVA = todayVA - parseFloat(params.amount);
         todayOrders--;
     }
 
-    updateTodayMybData({ totalOrders, todayOrders, va, avgCart }, id);
+    updateTodayMybData(
+        { totalOrders, todayOrders, todayVA, totalVA, avgCart },
+        id
+    );
 }
 
 function handleNewExhibitor() {
@@ -394,7 +406,8 @@ function getCurrentMybData() {
                 totalProdOccurrences: 0,
                 todayOpenOccurrences: 0,
                 totalOpenOccurrences: 0,
-                va: 0,
+                todayVA: 0,
+                totalVA: 0,
                 avgCart: 0,
                 date: getTodayMidnight(),
             })
