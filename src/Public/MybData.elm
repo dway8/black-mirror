@@ -26,18 +26,18 @@ type alias MybData =
 mybDataDecoder : D.Decoder MybData
 mybDataDecoder =
     D.succeed MybData
-        |> P.required "todayUsers" D.int
-        |> P.required "totalUsers" D.int
-        |> P.required "todayOrders" D.int
-        |> P.required "totalOrders" D.int
-        |> P.required "todayExhibitors" D.int
-        |> P.required "totalExhibitors" D.int
-        |> P.required "todayClients" D.int
-        |> P.required "totalClients" D.int
-        |> P.required "todayProdOccurrences" D.int
-        |> P.required "totalProdOccurrences" D.int
-        |> P.required "todayOpenOccurrences" D.int
-        |> P.required "totalOpenOccurrences" D.int
-        |> P.required "todayVA" D.int
-        |> P.required "totalVA" D.int
-        |> P.required "avgCart" D.int
+        |> P.required "today_users" D.int
+        |> P.required "total_users" D.int
+        |> P.required "today_orders" D.int
+        |> P.required "total_orders" D.int
+        |> P.required "today_exhibitors" D.int
+        |> P.required "total_exhibitors" D.int
+        |> P.required "today_clients" D.int
+        |> P.required "total_clients" D.int
+        |> P.required "today_prod_occurrences" D.int
+        |> P.required "total_prod_occurrences" D.int
+        |> P.required "today_open_occurrences" D.int
+        |> P.required "total_open_occurrences" D.int
+        |> P.required "today_va" D.int
+        |> P.required "total_va" D.int
+        |> P.required "avg_cart" D.int

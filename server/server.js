@@ -5,28 +5,27 @@ var request = require("request");
 const CronJob = require("cron").CronJob;
 const logger = require("./logger");
 const winston = logger.loggers.general;
-const low = require("lowdb");
-const lodashId = require("lodash-id");
 const path = require("path");
 const auth = require("basic-auth");
 const SSE = require("express-sse");
 const sse = new SSE(["Connected!"]);
 
-const FileSync = require("lowdb/adapters/FileSync");
-const adapter = new FileSync("db.json");
-const db = low(adapter);
+const { Client } = require("pg");
+
+const db = new Client({
+    connectionString: process.env.DATABASE_URL,
+    ssl: true,
+});
+
+db.connect();
+
 //
 // Constants
 const PORT = 42425;
 const isDevelopment = process.env.NODE_ENV !== "production";
 const secret = isDevelopment ? "secret" : process.env.SECRET;
 
-db._.mixin(lodashId);
 const bodyParser = require("body-parser");
-
-const _ = require("lodash");
-
-db.defaults({ myb_data: [], messages: [] }).write();
 
 const whitelist = ["http://localhost", "http://localhost:42424"];
 const corsOptions = {
@@ -46,13 +45,6 @@ app.use(bodyParser.urlencoded({ extended: false, limit: "50mb" }));
 // parse application/json
 app.use(bodyParser.json({ limit: "50mb" }));
 app.use(bodyParser.raw({ type: "text/plain" }));
-
-const forceReadDB = function(req, res, next) {
-    db.read();
-    next();
-};
-
-app.use(forceReadDB);
 
 // ROUTES ////////////////
 //////////////////////////
@@ -106,8 +98,9 @@ app.get("/api/last_tweet", (req, res) => {
     );
 });
 
-app.get("/api/myb_data", (req, res) => {
-    const mybData = getCurrentMybData();
+app.get("/api/myb_data", async (req, res) => {
+    const mybData = await getCurrentMybData();
+    winston.verbose("mybData: ", mybData);
     res.json(mybData);
 });
 
@@ -143,11 +136,12 @@ app.post("/mmi", (req, res) => {
 });
 
 app.get("/api/messages", (req, res) => {
-    const messages = db
-        .get("messages")
-        .filter(m => m.active)
-        .value();
-    res.json(messages);
+    res.json({});
+    // const messages = db
+    //     .get("messages")
+    //     .filter(m => m.active)
+    //     .value();
+    // res.json(messages);
 });
 
 app.get("/api/sse", sse.init);
@@ -228,7 +222,7 @@ app.listen(port, function() {
 //////////////////////////
 
 function handleNewUser() {
-    let { id, todayUsers, totalUsers } = _.cloneDeep(getCurrentMybData());
+    let { id, todayUsers, totalUsers } = getCurrentMybData();
 
     todayUsers++;
     totalUsers++;
@@ -246,7 +240,7 @@ function handleNewOrder(params) {
         todayVA,
         totalVA,
         avgCart,
-    } = _.cloneDeep(getCurrentMybData());
+    } = getCurrentMybData();
 
     todayOrders++;
     totalOrders++;
@@ -281,7 +275,7 @@ function handleOrderCancelled(params) {
         todayVA,
         totalVA,
         avgCart,
-    } = _.cloneDeep(getCurrentMybData());
+    } = getCurrentMybData();
 
     totalOrders--;
     totalVA = totalVA - parseFloat(params.amount);
@@ -300,10 +294,7 @@ function handleOrderCancelled(params) {
 }
 
 function handleNewExhibitor() {
-    let { id, todayExhibitors, totalExhibitors } = _.cloneDeep(
-        getCurrentMybData()
-    );
-
+    let { id, todayExhibitors, totalExhibitors } = getCurrentMybData();
     todayExhibitors++;
     totalExhibitors++;
 
@@ -317,7 +308,7 @@ function handleNewProdOccurrence(params) {
         totalClients,
         todayProdOccurrences,
         totalProdOccurrences,
-    } = _.cloneDeep(getCurrentMybData());
+    } = getCurrentMybData();
 
     todayProdOccurrences++;
     totalProdOccurrences++;
@@ -339,10 +330,11 @@ function handleNewProdOccurrence(params) {
 }
 
 function handleNewOpenOccurrence() {
-    let { id, todayOpenOccurrences, totalOpenOccurrences } = _.cloneDeep(
-        getCurrentMybData()
-    );
-
+    let {
+        id,
+        todayOpenOccurrences,
+        totalOpenOccurrences,
+    } = getCurrentMybData();
     todayOpenOccurrences++;
     totalOpenOccurrences++;
 
@@ -382,40 +374,17 @@ function getTodayMidnight() {
 
 // DB
 
-function getCurrentMybData() {
-    const rows = db
-        .get("myb_data")
-        .orderBy(["date"], ["desc"])
-        .value();
+async function getCurrentMybData() {
+    try {
+        const res = await db.query(
+            "SELECT * FROM myb_data ORDER BY date DESC LIMIT 1"
+        );
+        return res.rows[0];
+    } catch (err) {
+        winston.error(err.stack);
 
-    let mybData;
-
-    if (rows.length === 0) {
-        mybData = db
-            .get("myb_data")
-            .insert({
-                todayUsers: 0,
-                totalUsers: 0,
-                todayOrders: 0,
-                totalOrders: 0,
-                todayExhibitors: 0,
-                totalExhibitors: 0,
-                todayClients: 0,
-                totalClients: 0,
-                todayProdOccurrences: 0,
-                totalProdOccurrences: 0,
-                todayOpenOccurrences: 0,
-                totalOpenOccurrences: 0,
-                todayVA: 0,
-                totalVA: 0,
-                avgCart: 0,
-                date: getTodayMidnight(),
-            })
-            .write();
-    } else {
-        mybData = rows[0];
+        return null;
     }
-    return mybData;
 }
 function updateTodayMybData(newData, id) {
     winston.verbose("Updating today MYB data with", newData);
@@ -438,7 +407,7 @@ const resetDataCron = new CronJob("00 00 00 * * *", () => {
 resetDataCron.start();
 
 function resetDayMybData() {
-    let yesterdayMybData = _.cloneDeep(getCurrentMybData());
+    let yesterdayMybData = getCurrentMybData();
 
     let newData = {
         ...yesterdayMybData,
