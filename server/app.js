@@ -1,11 +1,7 @@
 "use strict";
 var express = require("express");
 var cors = require("cors");
-const CronJob = require("cron").CronJob;
-const logger = require("./logger");
-const winston = logger.loggers.general;
 const path = require("path");
-const db = require("./db/index.js");
 const mountRoutes = require("./routes");
 const requireAuth = require("./middlewares/auth.js");
 
@@ -63,40 +59,36 @@ app.listen(port, function() {
 
 // CRON
 
-const resetDataCron = new CronJob("00 00 00 * * *", () => {
-    winston.verbose("Resetting day data");
-    try {
-        resetDayMybData();
-    } catch (e) {
-        winston.error("Error when resetting day data", { e });
-    }
-});
-resetDataCron.start();
-
-function resetDayMybData() {
-    let yesterdayMybData = getCurrentMybData();
-
-    let newData = {
-        ...yesterdayMybData,
-        todayUsers: 0,
-        todayOrders: 0,
-        todayExhibitors: 0,
-        todayClients: 0,
-        todayProdOccurrences: 0,
-        todayOpenOccurrences: 0,
-        date: getTodayMidnight(),
-    };
-    delete newData.id;
-
-    winston.verbose("Inserting new row in MYB data", newData);
-    db.get("myb_data")
-        .insert(newData)
-        .write();
-}
-
-// HELPERS
-
-////
+// const resetDataCron = new CronJob("00 00 00 * * *", () => {
+//     winston.verbose("Resetting day data");
+//     try {
+//         resetDayMybData();
+//     } catch (e) {
+//         winston.error("Error when resetting day data", { e });
+//     }
+// });
+// resetDataCron.start();
+//
+// function resetDayMybData() {
+//     let yesterdayMybData = getCurrentMybData();
+//
+//     let newData = {
+//         ...yesterdayMybData,
+//         todayUsers: 0,
+//         todayOrders: 0,
+//         todayExhibitors: 0,
+//         todayClients: 0,
+//         todayProdOccurrences: 0,
+//         todayOpenOccurrences: 0,
+//         date: getTodayMidnight(),
+//     };
+//     delete newData.id;
+//
+//     winston.verbose("Inserting new row in MYB data", newData);
+//     db.get("myb_data")
+//         .insert(newData)
+//         .write();
+// }
 
 process.on("SIGINT", () => {
     console.log("Bye bye!");
