@@ -117,16 +117,16 @@ app.post("/mmi", async (req, res) => {
         await handleNewOrder(params);
         event = "new_order";
     } else if (params.order_cancelled && params.amount) {
-        handleOrderCancelled(params);
+        await handleOrderCancelled(params);
         event = "order_cancelled";
     } else if (params.new_exhibitor) {
-        handleNewExhibitor();
+        await handleNewExhibitor();
         event = "new_exhibitor";
     } else if (params.new_prod_occurrence) {
-        handleNewProdOccurrence(params);
+        await handleNewProdOccurrence(params);
         event = "new_prod_occurrence";
     } else if (params.new_open_occurrence) {
-        handleNewOpenOccurrence();
+        await handleNewOpenOccurrence();
         event = "new_open_occurrence";
     }
 
@@ -150,33 +150,54 @@ app.get("/api/sse", sse.init);
 
 app.route("/api/admin/messages")
     .all(requireLoggedUser)
-    .get((req, res) => {
-        const messages = db.get("messages").value();
+    .get(async (req, res) => {
+        const messages = await getAllMessages();
         res.json(messages);
     })
-    .post((req, res) => {
+    .post(async (req, res) => {
         try {
             const { title, content } = req.body;
             winston.verbose("Creating a new message with params", {
                 title,
                 content,
             });
-            const newMessage = db
-                .get("messages")
-                .insert({
-                    title,
-                    content,
-                    createdAt: new Date().getTime(),
-                    active: true,
-                })
-                .write();
+            try {
+                await db.query(
+                    "INSERT INTO messages(title, content, active) VALUES($1, $2, $3)",
+                    [title, content, true]
+                );
 
-            res.json({ success: true, data: newMessage });
+                const messages = await getAllMessages();
+
+                res.json({ success: true, data: messages });
+            } catch (err) {
+                winston.error(err.stack);
+                res.json({
+                    success: false,
+                    error: "Une erreur s'est produite",
+                });
+            }
         } catch (e) {
             winston.error("Error while creating a message", { e });
             res.json({ success: false, error: "Une erreur s'est produite" });
         }
     });
+
+async function getAllMessages() {
+    let messages = [];
+
+    try {
+        const result = await db.query(
+            "SELECT id, title, content, active, ROUND((EXTRACT(epoch FROM created_at)* 1000)) as created_at FROM messages"
+        );
+        messages = result.rows.map(row => {
+            return dbToMessagesKeys(row);
+        });
+    } catch (err) {
+        winston.error(err.stack);
+    }
+    return messages;
+}
 
 app.get("/api/admin/messages/archive/:id", requireLoggedUser, (req, res) => {
     try {
@@ -221,13 +242,13 @@ app.listen(port, function() {
 // MYB DATA //////////////
 //////////////////////////
 
-function handleNewUser() {
-    let { id, todayUsers, totalUsers } = getCurrentMybData();
+async function handleNewUser() {
+    let { id, todayUsers, totalUsers } = await getCurrentMybData();
 
     todayUsers++;
     totalUsers++;
 
-    updateTodayMybData({ totalUsers, todayUsers }, id);
+    await updateTodayMybData({ totalUsers, todayUsers }, id);
 }
 
 async function handleNewOrder(params) {
@@ -269,7 +290,7 @@ async function handleNewOrder(params) {
     );
 }
 
-function handleOrderCancelled(params) {
+async function handleOrderCancelled(params) {
     let {
         id,
         todayOrders,
@@ -277,7 +298,7 @@ function handleOrderCancelled(params) {
         todayVA,
         totalVA,
         avgCart,
-    } = getCurrentMybData();
+    } = await getCurrentMybData();
 
     totalOrders--;
     totalVA = totalVA - parseFloat(params.amount);
@@ -289,28 +310,28 @@ function handleOrderCancelled(params) {
         todayOrders--;
     }
 
-    updateTodayMybData(
+    await updateTodayMybData(
         { totalOrders, todayOrders, todayVA, totalVA, avgCart },
         id
     );
 }
 
-function handleNewExhibitor() {
-    let { id, todayExhibitors, totalExhibitors } = getCurrentMybData();
+async function handleNewExhibitor() {
+    let { id, todayExhibitors, totalExhibitors } = await getCurrentMybData();
     todayExhibitors++;
     totalExhibitors++;
 
     updateTodayMybData({ totalExhibitors, todayExhibitors }, id);
 }
 
-function handleNewProdOccurrence(params) {
+async function handleNewProdOccurrence(params) {
     let {
         id,
         todayClients,
         totalClients,
         todayProdOccurrences,
         totalProdOccurrences,
-    } = getCurrentMybData();
+    } = await getCurrentMybData();
 
     todayProdOccurrences++;
     totalProdOccurrences++;
@@ -320,7 +341,7 @@ function handleNewProdOccurrence(params) {
         totalClients++;
     }
 
-    updateTodayMybData(
+    await updateTodayMybData(
         {
             todayProdOccurrences,
             totalProdOccurrences,
@@ -331,16 +352,16 @@ function handleNewProdOccurrence(params) {
     );
 }
 
-function handleNewOpenOccurrence() {
+async function handleNewOpenOccurrence() {
     let {
         id,
         todayOpenOccurrences,
         totalOpenOccurrences,
-    } = getCurrentMybData();
+    } = await getCurrentMybData();
     todayOpenOccurrences++;
     totalOpenOccurrences++;
 
-    updateTodayMybData(
+    await updateTodayMybData(
         {
             todayOpenOccurrences,
             totalOpenOccurrences,
@@ -357,7 +378,6 @@ async function getCurrentMybData() {
             "SELECT * FROM myb_data ORDER BY date DESC LIMIT 1"
         );
         const row = dbToMybDataKeys(res.rows[0]);
-        winston.verbose("current row found", row);
 
         return row;
     } catch (err) {
@@ -489,6 +509,20 @@ function mybDataToDbKeys(data) {
 
     for (let [key, value] of Object.entries(data)) {
         const newKey = mybToDb[key] || key;
+        newData[newKey] = value;
+    }
+
+    return newData;
+}
+
+function dbToMessagesKeys(data) {
+    const dbToMessages = {
+        created_at: "createdAt",
+    };
+    const newData = {};
+
+    for (let [key, value] of Object.entries(data)) {
+        const newKey = dbToMessages[key] || key;
         newData[newKey] = value;
     }
 
