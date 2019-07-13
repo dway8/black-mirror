@@ -1,4 +1,4 @@
-module DateUtils exposing (dateDecoder, dayAndMonth, dayOfWeek, isNightTime, time)
+module DateUtils exposing (dateDecoder, dateTimeToString, dayAndMonth, dayOfWeek, isNightTime, time)
 
 import DateFormat as DF
 import DateFormat.Language as DFL exposing (english)
@@ -123,3 +123,22 @@ isNightTime zone now =
             Time.toHour zone now
     in
     hour >= 23 || hour < 8
+
+
+dateTimeToString : Zone -> Posix -> String
+dateTimeToString zone date =
+    DF.formatWithLanguage frenchDateFormat
+        [ DF.dayOfWeekNameFull
+        , DF.text " "
+        , DF.dayOfMonthNumber
+        , DF.text " "
+        , DF.monthNameFull
+        , DF.text " "
+        , DF.yearNumber
+        , DF.text " à "
+        , DF.hourMilitaryNumber
+        , DF.text "h"
+        , DF.minuteFixed
+        ]
+        zone
+        date

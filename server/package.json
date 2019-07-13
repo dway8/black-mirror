@@ -6,8 +6,8 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "serve": "nodemon -e js server.js --delay 1 --watch . --watch ../dist/",
-    "serveProd": "node server.js",
+    "serve": "nodemon -e js app.js --delay 1 --watch . --watch ../dist/",
+    "serveProd": "node app.js",
     "lint": "eslint_d --fix '**/*.js' '*.js'"
   },
   "devDependencies": {},
@@ -17,11 +17,13 @@
     "cors": "^2.8.4",
     "cron": "^1.7.0",
     "express": "^4.16.1",
+    "express-promise-router": "^3.0.3",
     "express-sse": "^0.5.1",
     "lodash-id": "^0.14.0",
     "lowdb": "^1.0.0",
     "nodemon": "^1.18.10",
     "path": "^0.12.7",
+    "pg": "^7.11.0",
     "request": "^2.88.0",
     "winston": "^3.2.1",
     "winston-daily-rotate-file": "^3.8.0"

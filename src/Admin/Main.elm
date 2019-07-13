@@ -1,6 +1,7 @@
 module Admin.Main exposing (main)
 
 import Browser exposing (Document)
+import DateUtils
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
@@ -12,7 +13,8 @@ import Json.Encode as E
 import Model exposing (Message)
 import RemoteData as RD exposing (RemoteData(..), WebData)
 import Style exposing (..)
-import Time
+import Task
+import Time exposing (Posix, Zone)
 import Utils
 
 
@@ -33,6 +35,7 @@ type alias Flags =
 type alias Model =
     { messages : WebData (List Message)
     , newMessage : EditableData Message
+    , zone : Zone
     }
 
 
@@ -50,22 +53,29 @@ type Msg
     | UpdateMessageTitle String
     | UpdateMessageContent String
     | SaveMessage
-    | SaveMessageResponse (WebData (ApiResponse Message))
+    | SaveMessageResponse (WebData (ApiResponse (List Message)))
     | ArchiveMessage Message
-    | ArchiveMessageResponse (WebData (ApiResponse Message))
+    | ArchiveMessageResponse (WebData (ApiResponse (List Message)))
+    | InitZone Zone
 
 
 init : Flags -> ( Model, Cmd Msg )
 init _ =
-    ( { messages = NotAsked, newMessage = NotEdited }
-    , fetchMessagesCmd
+    ( { messages = NotAsked, newMessage = NotEdited, zone = Time.utc }
+    , Cmd.batch [ fetchMessagesCmd, initZone ]
     )
+
+
+initZone : Cmd Msg
+initZone =
+    Time.here
+        |> Task.perform InitZone
 
 
 fetchMessagesCmd : Cmd Msg
 fetchMessagesCmd =
     Http.get
-        { url = "/api/admin/messages"
+        { url = "/api/messages/admin"
         , expect = Http.expectJson (RD.fromResult >> FetchMessagesResponse) Model.messagesDecoder
         }
 
@@ -85,6 +95,7 @@ view model =
                 , height fill
                 , width fill
                 , padding 40
+                , Font.size 16
                 ]
             <|
                 column [ width fill, height fill, spacing 50 ]
@@ -92,7 +103,7 @@ view model =
                     , case model.messages of
                         Success messages ->
                             column [ spacing 20 ]
-                                [ viewMessages messages
+                                [ viewMessages model.zone messages
                                 , viewNewMessage model.newMessage
                                 ]
 
@@ -135,23 +146,24 @@ viewNewMessage newMessage =
             text "other"
 
 
-viewMessages : List Message -> Element Msg
-viewMessages messages =
+viewMessages : Zone -> List Message -> Element Msg
+viewMessages zone messages =
     if messages == [] then
         text "Aucun message"
 
     else
-        column []
+        column [ spacing 10 ]
             (messages
+                |> List.sortBy (.createdAt >> Time.posixToMillis)
                 |> List.map
                     (\message ->
                         row [ spacing 10 ]
                             [ el [ Font.bold ] <| text message.title
                             , text message.content
                             , if message.active then
-                                Input.button [ padding 8, Border.rounded 4, Background.color mediumGreyColor, Font.color whiteColor, alignBottom ]
+                                Input.button [ padding 6, Border.rounded 4, Background.color mediumGreyColor, Font.color whiteColor, alignBottom ]
                                     { label =
-                                        row [ spacing 5, Font.size 16 ]
+                                        row [ spacing 5 ]
                                             [ el [] <| Utils.icon "archive"
                                             , el [] <| text "Archiver"
                                             ]
@@ -160,6 +172,7 @@ viewMessages messages =
 
                               else
                                 el [ Font.color mediumGreyColor ] <| text "Archivé"
+                            , el [ Font.light, Font.italic, Font.size 14 ] <| text <| "Créé le " ++ DateUtils.dateTimeToString zone message.createdAt
                             ]
                     )
             )
@@ -216,13 +229,8 @@ update msg model =
 
         SaveMessageResponse response ->
             case response of
-                Success (RespOk message) ->
-                    let
-                        messages =
-                            model.messages
-                                |> RD.map (\msgs -> msgs ++ [ message ])
-                    in
-                    ( { model | messages = messages, newMessage = NotEdited }, Cmd.none )
+                Success (RespOk messages) ->
+                    ( { model | messages = Success messages, newMessage = NotEdited }, Cmd.none )
 
                 _ ->
                     --TODO display error
@@ -233,30 +241,19 @@ update msg model =
 
         ArchiveMessageResponse response ->
             case response of
-                Success (RespOk message) ->
-                    let
-                        newMessages =
-                            model.messages
-                                |> RD.map
-                                    (List.map
-                                        (\m ->
-                                            if m.id == message.id then
-                                                message
-
-                                            else
-                                                m
-                                        )
-                                    )
-                    in
-                    ( { model | messages = newMessages }, Cmd.none )
+                Success (RespOk messages) ->
+                    ( { model | messages = Success messages }, Cmd.none )
 
                 _ ->
                     ( model, Cmd.none )
 
+        InitZone zone ->
+            ( { model | zone = zone }, Cmd.none )
+
 
 initMessage : Message
 initMessage =
-    { id = "NEW"
+    { id = 0
     , title = ""
     , content = ""
     , createdAt = Time.millisToPosix 0
@@ -267,19 +264,19 @@ initMessage =
 saveMessageCmd : Message -> Cmd Msg
 saveMessageCmd message =
     Http.post
-        { url = "/api/admin/messages"
+        { url = "/api/messages/admin"
         , body = encodeMessage message |> Http.jsonBody
         , expect =
-            Http.expectJson (RD.fromResult >> SaveMessageResponse) (apiResponseDecoder Model.messageDecoder)
+            Http.expectJson (RD.fromResult >> SaveMessageResponse) (apiResponseDecoder Model.messagesDecoder)
         }
 
 
 archiveMessageCmd : Message -> Cmd Msg
 archiveMessageCmd message =
     Http.get
-        { url = "/api/admin/messages/archive/" ++ message.id
+        { url = "/api/messages/admin/archive/" ++ String.fromInt message.id
         , expect =
-            Http.expectJson (RD.fromResult >> ArchiveMessageResponse) (apiResponseDecoder Model.messageDecoder)
+            Http.expectJson (RD.fromResult >> ArchiveMessageResponse) (apiResponseDecoder Model.messagesDecoder)
         }
 
 

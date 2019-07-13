@@ -7,7 +7,7 @@ import Time exposing (Posix)
 
 
 type alias Message =
-    { id : String
+    { id : Int
     , title : String
     , content : String
     , createdAt : Posix
@@ -23,7 +23,7 @@ messagesDecoder =
 messageDecoder : D.Decoder Message
 messageDecoder =
     D.succeed Message
-        |> P.required "id" D.string
+        |> P.required "id" D.int
         |> P.required "title" D.string
         |> P.required "content" D.string
         |> P.required "createdAt" DateUtils.dateDecoder
