@@ -56,7 +56,7 @@ getInfoFromOutside tagger onError =
                         Ok ( mybData, event ) ->
                             tagger <| ReceivedMYBEvent mybData event
 
-                        Err _ ->
+                        Err e ->
                             onError "Error when parsing SSE message"
 
                 _ ->

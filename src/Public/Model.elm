@@ -129,7 +129,7 @@ fetchLastTweet =
 fetchMybData : Cmd Msg
 fetchMybData =
     Http.get
-        { url = "/api/myb_data"
+        { url = "/api/myb-data"
         , expect = Http.expectJson (RD.fromResult >> FetchMybDataResponse) <| MybData.mybDataDecoder
         }
 

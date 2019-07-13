@@ -6,6 +6,11 @@ const requireAuth = require("../middlewares/auth.js");
 
 const router = new Router();
 
+router.get("/", async (req, res) => {
+    const messages = (await getAllMessages()).filter(m => m.active);
+    res.send(messages);
+});
+
 router
     .route("/admin")
     .all(requireAuth)
