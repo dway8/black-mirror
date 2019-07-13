@@ -104,7 +104,7 @@ app.get("/api/myb_data", async (req, res) => {
     res.json(mybData);
 });
 
-app.post("/mmi", (req, res) => {
+app.post("/mmi", async (req, res) => {
     res.json({ message: "OK" });
     const params = req.body;
     winston.verbose("Received params from MYB", params);
@@ -114,7 +114,7 @@ app.post("/mmi", (req, res) => {
         handleNewUser();
         event = "new_user";
     } else if (params.new_order && params.amount) {
-        handleNewOrder(params);
+        await handleNewOrder(params);
         event = "new_order";
     } else if (params.order_cancelled && params.amount) {
         handleOrderCancelled(params);
@@ -230,7 +230,7 @@ function handleNewUser() {
     updateTodayMybData({ totalUsers, todayUsers }, id);
 }
 
-function handleNewOrder(params) {
+async function handleNewOrder(params) {
     let {
         id,
         todayOrders,
@@ -240,7 +240,9 @@ function handleNewOrder(params) {
         todayVA,
         totalVA,
         avgCart,
-    } = getCurrentMybData();
+    } = await getCurrentMybData();
+
+    winston.verbose("cur todayOrders", { id, todayOrders, totalOrders });
 
     todayOrders++;
     totalOrders++;
@@ -253,7 +255,7 @@ function handleNewOrder(params) {
         totalExhibitors++;
     }
 
-    updateTodayMybData(
+    await updateTodayMybData(
         {
             todayOrders,
             totalOrders,
@@ -347,31 +349,6 @@ function handleNewOpenOccurrence() {
     );
 }
 
-// HELPERS
-
-function requireLoggedUser(req, res, next) {
-    var credentials = auth(req);
-
-    // Check credentials
-    if (!credentials || !checkCredentials(credentials.name, credentials.pass)) {
-        winston.verbose("Wrong credentials");
-        res.statusCode = 401;
-        res.setHeader("WWW-Authenticate", 'Basic realm="example"');
-        res.end("Access denied");
-    } else {
-        winston.verbose("Credentials OK");
-        next();
-    }
-}
-
-function checkCredentials(name, pass) {
-    return name === "adminSpottt" && pass === secret;
-}
-
-function getTodayMidnight() {
-    return new Date().setHours(0, 0, 0, 0);
-}
-
 // DB
 
 async function getCurrentMybData() {
@@ -379,19 +356,29 @@ async function getCurrentMybData() {
         const res = await db.query(
             "SELECT * FROM myb_data ORDER BY date DESC LIMIT 1"
         );
-        return res.rows[0];
+        const row = dbToMybDataKeys(res.rows[0]);
+        winston.verbose("current row found", row);
+
+        return row;
     } catch (err) {
         winston.error(err.stack);
 
         return null;
     }
 }
-function updateTodayMybData(newData, id) {
-    winston.verbose("Updating today MYB data with", newData);
-    db.get("myb_data")
-        .getById(id)
-        .assign(newData)
-        .write();
+
+async function updateTodayMybData(data, id) {
+    winston.verbose("Updating today MYB data with", data);
+
+    try {
+        const newData = mybDataToDbKeys(data);
+        for (let [key, value] of Object.entries(newData)) {
+            const query = `UPDATE myb_data SET ${key} = ${value} WHERE id = ${id}`;
+            await db.query(query);
+        }
+    } catch (err) {
+        winston.error(err.stack);
+    }
 }
 
 // CRON
@@ -426,6 +413,89 @@ function resetDayMybData() {
         .insert(newData)
         .write();
 }
+
+// HELPERS
+
+function requireLoggedUser(req, res, next) {
+    var credentials = auth(req);
+
+    // Check credentials
+    if (!credentials || !checkCredentials(credentials.name, credentials.pass)) {
+        winston.verbose("Wrong credentials");
+        res.statusCode = 401;
+        res.setHeader("WWW-Authenticate", 'Basic realm="example"');
+        res.end("Access denied");
+    } else {
+        winston.verbose("Credentials OK");
+        next();
+    }
+}
+
+function checkCredentials(name, pass) {
+    return name === "adminSpottt" && pass === secret;
+}
+
+function getTodayMidnight() {
+    return new Date().setHours(0, 0, 0, 0);
+}
+
+function dbToMybDataKeys(data) {
+    const dbToMyb = {
+        today_users: "todayUsers",
+        total_users: "totalUsers",
+        today_orders: "todayOrders",
+        total_orders: "totalOrders",
+        today_exhibitors: "todayExhibitors",
+        total_exhibitors: "totalExhibitors",
+        today_clients: "todayClients",
+        total_clients: "totalClients",
+        today_prod_occurrences: "todayProdOccurrences",
+        total_prod_occurrences: "totalProdOccurrences",
+        today_open_occurrences: "todayOpenOccurrences",
+        total_open_occurrences: "totalOpenOccurrences",
+        today_va: "todayVA",
+        total_va: "totalVA",
+        avg_cart: "avgCart",
+    };
+    const newData = {};
+
+    for (let [key, value] of Object.entries(data)) {
+        const newKey = dbToMyb[key] || key;
+        newData[newKey] = value;
+    }
+
+    return newData;
+}
+
+function mybDataToDbKeys(data) {
+    const mybToDb = {
+        todayUsers: "today_users",
+        totalUsers: "total_users",
+        todayOrders: "today_orders",
+        totalOrders: "total_orders",
+        todayExhibitors: "today_exhibitors",
+        totalExhibitors: "total_exhibitors",
+        todayClients: "today_clients",
+        totalClients: "total_clients",
+        todayProdOccurrences: "today_prod_occurrences",
+        totalProdOccurrences: "total_prod_occurrences",
+        todayOpenOccurrences: "today_open_occurrences",
+        totalOpenOccurrences: "total_open_occurrences",
+        todayVA: "today_va",
+        totalVA: "total_va",
+        avgCart: "avg_cart",
+    };
+    const newData = {};
+
+    for (let [key, value] of Object.entries(data)) {
+        const newKey = mybToDb[key] || key;
+        newData[newKey] = value;
+    }
+
+    return newData;
+}
+
+////
 
 process.on("SIGINT", () => {
     console.log("Bye bye!");
