@@ -2,21 +2,69 @@ const Router = require("express-promise-router");
 const db = require("../db/index.js");
 const logger = require("../logger");
 const winston = logger.loggers.general;
+const requireAuth = require("../middlewares/auth.js");
 
 const router = new Router();
 
-router.get("/admin", async (req, res) => {
-    const messages = await getAllMessages();
-    res.send(messages);
-});
+router
+    .route("/admin")
+    .all(requireAuth)
+    .get(async (req, res) => {
+        const messages = await getAllMessages();
+        res.send(messages);
+    })
+    .post(async (req, res) => {
+        try {
+            const { title, content } = req.body;
+            winston.verbose("Creating a new message with params", {
+                title,
+                content,
+            });
+            try {
+                await db.query(
+                    "INSERT INTO messages(title, content, active) VALUES($1, $2, $3)",
+                    [title, content, true]
+                );
 
-module.exports = router;
+                const messages = await getAllMessages();
+
+                res.json({ success: true, data: messages });
+            } catch (err) {
+                winston.error(err.stack);
+                res.send({
+                    success: false,
+                    error: "Une erreur s'est produite",
+                });
+            }
+        } catch (e) {
+            winston.error("Error while creating a message", { e });
+            res.send({ success: false, error: "Une erreur s'est produite" });
+        }
+    });
+
+router.get("/admin/archive/:id", requireAuth, async (req, res) => {
+    try {
+        const { id } = req.params;
+        winston.verbose(`Archiving message ${id}`);
+
+        await db.query("UPDATE messages SET active=$1 WHERE id = $2", [
+            false,
+            id,
+        ]);
+
+        const messages = await getAllMessages();
+
+        res.json({ success: true, data: messages });
+    } catch (e) {
+        winston.error("Error while archiving a message", { e });
+        res.send({ success: false, error: "Une erreur s'est produite" });
+    }
+});
 
 async function getAllMessages() {
     let messages = [];
 
     try {
-        winston.verbose("db", { db });
         const { rows } = await db.query(
             "SELECT id, title, content, active, ROUND((EXTRACT(epoch FROM created_at)* 1000)) as created_at FROM messages"
         );
@@ -42,3 +90,5 @@ function dbToMessagesKeys(data) {
 
     return newData;
 }
+
+module.exports = router;

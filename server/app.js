@@ -6,16 +6,15 @@ const CronJob = require("cron").CronJob;
 const logger = require("./logger");
 const winston = logger.loggers.general;
 const path = require("path");
-const auth = require("basic-auth");
 const SSE = require("express-sse");
 const sse = new SSE(["Connected!"]);
 const db = require("./db/index.js");
 const mountRoutes = require("./routes");
+const requireAuth = require("./middlewares/auth.js");
 
 // Constants
 const PORT = 42425;
 const isDevelopment = process.env.NODE_ENV !== "production";
-const secret = isDevelopment ? "secret" : process.env.SECRET;
 
 const bodyParser = require("body-parser");
 
@@ -29,7 +28,6 @@ const corsOptions = {
 };
 
 const app = express();
-mountRoutes(app);
 
 app.use(cors(corsOptions));
 
@@ -39,6 +37,8 @@ app.use(bodyParser.urlencoded({ extended: false, limit: "50mb" }));
 // parse application/json
 app.use(bodyParser.json({ limit: "50mb" }));
 app.use(bodyParser.raw({ type: "text/plain" }));
+
+mountRoutes(app);
 
 // ROUTES ////////////////
 //////////////////////////
@@ -140,70 +140,13 @@ app.get("/api/messages", (req, res) => {
 
 app.get("/api/sse", sse.init);
 
-////// ADMIN ROUTES /////////////////
-
-// app.route("/api/messages/admin");
-// app.route("/api/admin/messages")
-//     .all(requireLoggedUser)
-//     .get(async (req, res) => {
-//         const messages = await getAllMessages();
-//         res.json(messages);
-//     })
-//     .post(async (req, res) => {
-//         try {
-//             const { title, content } = req.body;
-//             winston.verbose("Creating a new message with params", {
-//                 title,
-//                 content,
-//             });
-//             try {
-//                 await db.query(
-//                     "INSERT INTO messages(title, content, active) VALUES($1, $2, $3)",
-//                     [title, content, true]
-//                 );
-//
-//                 const messages = await getAllMessages();
-//
-//                 res.json({ success: true, data: messages });
-//             } catch (err) {
-//                 winston.error(err.stack);
-//                 res.json({
-//                     success: false,
-//                     error: "Une erreur s'est produite",
-//                 });
-//             }
-//         } catch (e) {
-//             winston.error("Error while creating a message", { e });
-//             res.json({ success: false, error: "Une erreur s'est produite" });
-//         }
-//     });
-
-app.get("/api/admin/messages/archive/:id", requireLoggedUser, (req, res) => {
-    try {
-        const id = req.params.id;
-        winston.verbose(`Archiving message ${id}`);
-        const newMessage = db
-            .get("messages")
-            .getById(id)
-            .assign({ active: false })
-            .write();
-
-        res.json({ success: true, data: newMessage });
-    } catch (e) {
-        winston.error("Error while archiving a message", { e });
-        res.json({ success: false, error: "Une erreur s'est produite" });
-    }
-});
-
-/////////////////////////////////////
-
 // Serving compiled elm client
 if (!isDevelopment) {
-    app.get("/admin", requireLoggedUser, (req, res) =>
+    app.get("/admin", requireAuth, (req, res) =>
         res.sendFile(path.join(__dirname, "/../dist/admin.html"))
     );
 
-    app.get("/admin.html", requireLoggedUser, (req, res) =>
+    app.get("/admin.html", requireAuth, (req, res) =>
         res.sendFile(path.join(__dirname, "/../dist/admin.html"))
     );
     app.use(express.static(path.join(__dirname, "/../dist")));
@@ -414,25 +357,6 @@ function resetDayMybData() {
 }
 
 // HELPERS
-
-function requireLoggedUser(req, res, next) {
-    var credentials = auth(req);
-
-    // Check credentials
-    if (!credentials || !checkCredentials(credentials.name, credentials.pass)) {
-        winston.verbose("Wrong credentials");
-        res.statusCode = 401;
-        res.setHeader("WWW-Authenticate", 'Basic realm="example"');
-        res.end("Access denied");
-    } else {
-        winston.verbose("Credentials OK");
-        next();
-    }
-}
-
-function checkCredentials(name, pass) {
-    return name === "adminSpottt" && pass === secret;
-}
 
 function getTodayMidnight() {
     return new Date().setHours(0, 0, 0, 0);

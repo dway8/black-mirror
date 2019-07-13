@@ -154,6 +154,7 @@ viewMessages zone messages =
     else
         column [ spacing 10 ]
             (messages
+                |> List.sortBy (.createdAt >> Time.posixToMillis)
                 |> List.map
                     (\message ->
                         row [ spacing 10 ]
@@ -263,7 +264,7 @@ initMessage =
 saveMessageCmd : Message -> Cmd Msg
 saveMessageCmd message =
     Http.post
-        { url = "/api/admin/messages"
+        { url = "/api/messages/admin"
         , body = encodeMessage message |> Http.jsonBody
         , expect =
             Http.expectJson (RD.fromResult >> SaveMessageResponse) (apiResponseDecoder Model.messagesDecoder)
@@ -273,7 +274,7 @@ saveMessageCmd message =
 archiveMessageCmd : Message -> Cmd Msg
 archiveMessageCmd message =
     Http.get
-        { url = "/api/admin/messages/archive/" ++ String.fromInt message.id
+        { url = "/api/messages/admin/archive/" ++ String.fromInt message.id
         , expect =
             Http.expectJson (RD.fromResult >> ArchiveMessageResponse) (apiResponseDecoder Model.messagesDecoder)
         }
