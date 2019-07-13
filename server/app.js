@@ -9,17 +9,9 @@ const path = require("path");
 const auth = require("basic-auth");
 const SSE = require("express-sse");
 const sse = new SSE(["Connected!"]);
+const db = require("./db/index.js");
+const mountRoutes = require("./routes");
 
-const { Client } = require("pg");
-
-const db = new Client({
-    connectionString: process.env.DATABASE_URL,
-    ssl: true,
-});
-
-db.connect();
-
-//
 // Constants
 const PORT = 42425;
 const isDevelopment = process.env.NODE_ENV !== "production";
@@ -37,6 +29,8 @@ const corsOptions = {
 };
 
 const app = express();
+mountRoutes(app);
+
 app.use(cors(corsOptions));
 
 // parse application/x-www-form-urlencoded
@@ -148,56 +142,41 @@ app.get("/api/sse", sse.init);
 
 ////// ADMIN ROUTES /////////////////
 
-app.route("/api/admin/messages")
-    .all(requireLoggedUser)
-    .get(async (req, res) => {
-        const messages = await getAllMessages();
-        res.json(messages);
-    })
-    .post(async (req, res) => {
-        try {
-            const { title, content } = req.body;
-            winston.verbose("Creating a new message with params", {
-                title,
-                content,
-            });
-            try {
-                await db.query(
-                    "INSERT INTO messages(title, content, active) VALUES($1, $2, $3)",
-                    [title, content, true]
-                );
-
-                const messages = await getAllMessages();
-
-                res.json({ success: true, data: messages });
-            } catch (err) {
-                winston.error(err.stack);
-                res.json({
-                    success: false,
-                    error: "Une erreur s'est produite",
-                });
-            }
-        } catch (e) {
-            winston.error("Error while creating a message", { e });
-            res.json({ success: false, error: "Une erreur s'est produite" });
-        }
-    });
-
-async function getAllMessages() {
-    let messages = [];
-
-    try {
-        const result = await db.query(
-            "SELECT id, title, content, active, ROUND((EXTRACT(epoch FROM created_at)* 1000)) as created_at FROM messages"
-        );
-        messages = result.rows.map(row => {
-            return dbToMessagesKeys(row);
-        });
-    } catch (err) {
-        winston.error(err.stack);
-    }
-    return messages;
-}
+// app.route("/api/messages/admin");
+// app.route("/api/admin/messages")
+//     .all(requireLoggedUser)
+//     .get(async (req, res) => {
+//         const messages = await getAllMessages();
+//         res.json(messages);
+//     })
+//     .post(async (req, res) => {
+//         try {
+//             const { title, content } = req.body;
+//             winston.verbose("Creating a new message with params", {
+//                 title,
+//                 content,
+//             });
+//             try {
+//                 await db.query(
+//                     "INSERT INTO messages(title, content, active) VALUES($1, $2, $3)",
+//                     [title, content, true]
+//                 );
+//
+//                 const messages = await getAllMessages();
+//
+//                 res.json({ success: true, data: messages });
+//             } catch (err) {
+//                 winston.error(err.stack);
+//                 res.json({
+//                     success: false,
+//                     error: "Une erreur s'est produite",
+//                 });
+//             }
+//         } catch (e) {
+//             winston.error("Error while creating a message", { e });
+//             res.json({ success: false, error: "Une erreur s'est produite" });
+//         }
+//     });
 
 app.get("/api/admin/messages/archive/:id", requireLoggedUser, (req, res) => {
     try {
@@ -509,20 +488,6 @@ function mybDataToDbKeys(data) {
 
     for (let [key, value] of Object.entries(data)) {
         const newKey = mybToDb[key] || key;
-        newData[newKey] = value;
-    }
-
-    return newData;
-}
-
-function dbToMessagesKeys(data) {
-    const dbToMessages = {
-        created_at: "createdAt",
-    };
-    const newData = {};
-
-    for (let [key, value] of Object.entries(data)) {
-        const newKey = dbToMessages[key] || key;
         newData[newKey] = value;
     }
 

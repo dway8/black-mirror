@@ -75,7 +75,7 @@ initZone =
 fetchMessagesCmd : Cmd Msg
 fetchMessagesCmd =
     Http.get
-        { url = "/api/admin/messages"
+        { url = "/api/messages/admin"
         , expect = Http.expectJson (RD.fromResult >> FetchMessagesResponse) Model.messagesDecoder
         }
 
