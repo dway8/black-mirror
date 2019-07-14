@@ -1,13 +1,13 @@
 module Admin.Main exposing (main)
 
-import Admin.Model exposing (ApiResponse(..), EditableData(..), Flags, Model, Msg(..), archiveMessageCmd, fetchMessagesCmd, fetchSoundsCmd, saveMessageCmd, triggerSoundCmd)
+import Admin.Model exposing (ApiResponse(..), EditableData(..), Flags, Model, Msg(..), archiveMessageCmd, fetchMessagesCmd, fetchSoundsCmd, saveMessageCmd, saveSoundCmd, triggerSoundCmd)
 import Admin.View as View
 import Browser
 import Editable
 import Element exposing (..)
-import Model exposing (Message)
+import Model exposing (Message, Sound)
 import Ports exposing (InfoForOutside(..))
-import RemoteData as RD exposing (RemoteData(..))
+import RemoteData as RD exposing (RemoteData(..), WebData)
 import Task
 import Time
 
@@ -122,27 +122,75 @@ update msg model =
 
         EditSoundButtonPressed sound ->
             let
+                updateSoundFn s =
+                    { s
+                        | url =
+                            s.url
+                                |> Editable.edit
+                                |> Editable.map identity
+                    }
+
                 newSounds =
                     model.sounds
-                        |> RD.map
-                            (\sounds ->
-                                sounds
-                                    |> List.map
-                                        (\s ->
-                                            if s.id == sound.id then
-                                                { s
-                                                    | url =
-                                                        s.url
-                                                            |> Editable.edit
-                                                            |> Editable.map identity
-                                                }
-
-                                            else
-                                                s
-                                        )
-                            )
+                        |> updateSoundInList updateSoundFn sound
             in
             ( { model | sounds = newSounds }, Cmd.none )
+
+        SoundUrlUpdated sound val ->
+            let
+                updateSoundFn s =
+                    { s | url = Editable.map (always (Just val)) s.url }
+
+                newSounds =
+                    model.sounds
+                        |> updateSoundInList updateSoundFn sound
+            in
+            ( { model | sounds = newSounds }, Cmd.none )
+
+        CancelSoundEditButtonPressed sound ->
+            let
+                updateSoundFn s =
+                    { s | url = Editable.cancel s.url }
+
+                newSounds =
+                    model.sounds
+                        |> updateSoundInList updateSoundFn sound
+            in
+            ( { model | sounds = newSounds }, Cmd.none )
+
+        SaveSoundButtonPressed sound ->
+            let
+                cmd =
+                    if Editable.isDirty sound.url then
+                        saveSoundCmd sound
+
+                    else
+                        Cmd.none
+            in
+            ( model, cmd )
+
+        GotSaveSoundResponse response ->
+            case response of
+                Success (RespOk sounds) ->
+                    ( { model | sounds = Success sounds }, Cmd.none )
+
+                _ ->
+                    ( model, Cmd.none )
+
+
+updateSoundInList : (Sound -> Sound) -> Sound -> WebData (List Sound) -> WebData (List Sound)
+updateSoundInList updateFn sound sounds =
+    sounds
+        |> RD.map
+            (List.map
+                (\s ->
+                    if s.id == sound.id then
+                        updateFn s
+
+                    else
+                        s
+                )
+            )
 
 
 initMessage : Message

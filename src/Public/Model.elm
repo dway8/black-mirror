@@ -1,9 +1,9 @@
-module Public.Model exposing (ImageSize, Media, Model, Msg(..), Tweet, Weather, Window, fetchLastTweetCmd, fetchMessagesCmd, fetchMybDataCmd, fetchWeatherCmd, initSaint, initTime)
+module Public.Model exposing (ImageSize, Media, Model, Msg(..), Tweet, Weather, Window, fetchLastTweetCmd, fetchMessagesCmd, fetchMybDataCmd, fetchSoundsCmd, fetchWeatherCmd, initSaint, initTime)
 
 import Http
 import Json.Decode as D
 import Json.Decode.Pipeline as P
-import Model exposing (Message)
+import Model exposing (Message, Sound)
 import Ports exposing (InfoForElm)
 import Public.Ephemeris as Ephemeris
 import Public.MybData as MybData exposing (MybData)
@@ -23,6 +23,7 @@ type alias Model =
     , messages : WebData (List Message)
     , messageCursor : Int
     , counter : Int
+    , sounds : WebData (List Sound)
     }
 
 
@@ -77,6 +78,7 @@ type Msg
     | AnimateMessagesAndTweet
     | InfoFromOutside InfoForElm
     | IncrementCounter
+    | FetchSoundsResponse (WebData (List Sound))
 
 
 initTime : Cmd Msg
@@ -193,4 +195,12 @@ fetchMessagesCmd =
     Http.get
         { url = "/api/messages"
         , expect = Http.expectJson (RD.fromResult >> FetchMessagesResponse) Model.messagesDecoder
+        }
+
+
+fetchSoundsCmd : Cmd Msg
+fetchSoundsCmd =
+    Http.get
+        { url = "/api/sounds"
+        , expect = Http.expectJson (RD.fromResult >> FetchSoundsResponse) Model.soundsDecoder
         }

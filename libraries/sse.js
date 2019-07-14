@@ -22,6 +22,14 @@ function createEventSource(es, app, url) {
             app.ports.infoForElm.send(res);
         });
 
+        es.addEventListener("sounds-event", function(event) {
+            var res = {
+                tag: "receivedSounds",
+                data: JSON.parse(event.data),
+            };
+            app.ports.infoForElm.send(res);
+        });
+
         es.addEventListener("trigger-sound", function(event) {
             const url = JSON.parse(event.data);
             common.playAudio(url);

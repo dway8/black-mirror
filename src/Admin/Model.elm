@@ -1,5 +1,6 @@
-module Admin.Model exposing (ApiResponse(..), EditableData(..), Flags, Model, Msg(..), apiResponseDecoder, archiveMessageCmd, encodeMessage, fetchMessagesCmd, fetchSoundsCmd, saveMessageCmd, triggerSoundCmd)
+module Admin.Model exposing (ApiResponse(..), EditableData(..), Flags, Model, Msg(..), apiResponseDecoder, archiveMessageCmd, encodeMessage, fetchMessagesCmd, fetchSoundsCmd, saveMessageCmd, saveSoundCmd, triggerSoundCmd)
 
+import Editable
 import Http
 import Json.Decode as D
 import Json.Encode as E
@@ -42,6 +43,10 @@ type Msg
     | SoundIconClicked String
     | TriggerSoundButtonPressed Sound
     | EditSoundButtonPressed Sound
+    | SoundUrlUpdated Sound String
+    | CancelSoundEditButtonPressed Sound
+    | SaveSoundButtonPressed Sound
+    | GotSaveSoundResponse (WebData (ApiResponse (List Sound)))
 
 
 type ApiResponse a
@@ -60,7 +65,7 @@ fetchMessagesCmd =
 fetchSoundsCmd : Cmd Msg
 fetchSoundsCmd =
     Http.get
-        { url = "/api/sounds/admin"
+        { url = "/api/sounds"
         , expect = Http.expectJson (RD.fromResult >> GotFetchSoundsResponse) Model.soundsDecoder
         }
 
@@ -111,4 +116,22 @@ triggerSoundCmd id =
         { url = "/api/sounds/admin/trigger/" ++ String.fromInt id
         , expect =
             Http.expectJson (RD.fromResult >> always NoOp) (D.succeed ())
+        }
+
+
+saveSoundCmd : Sound -> Cmd Msg
+saveSoundCmd { id, url } =
+    let
+        body =
+            [ ( "id", E.int id )
+            , ( "url", E.string <| Maybe.withDefault "" <| Editable.value url )
+            ]
+                |> E.object
+                |> Http.jsonBody
+    in
+    Http.post
+        { url = "/api/sounds/admin/url"
+        , body = body
+        , expect =
+            Http.expectJson (RD.fromResult >> GotSaveSoundResponse) (apiResponseDecoder Model.soundsDecoder)
         }

@@ -145,6 +145,7 @@ viewSounds sounds =
         , column [ spacing 15 ]
             (sounds
                 |> List.filter (\{ event } -> not <| List.member event triggerableEvents)
+                |> List.sortBy (.event >> eventToString)
                 |> List.map viewSound
             )
         , column
@@ -195,16 +196,20 @@ viewSound ({ event, url } as sound) =
                     }
 
             Editable _ new ->
-                row [ spacing 10 ]
-                    [ Input.text [ width <| px 200, Border.solid, Border.width 1, Border.color mediumGreyColor, Border.rounded 4, paddingXY 13 7 ]
-                        { onChange = always NoOp
+                row [ spacing 8 ]
+                    [ Input.text [ width <| px 400, Border.solid, Border.width 1, Border.color mediumGreyColor, Border.rounded 4, paddingXY 13 7 ]
+                        { onChange = SoundUrlUpdated sound
                         , text = new |> Maybe.withDefault ""
-                        , placeholder = Nothing
+                        , placeholder = Just <| Input.placeholder [ height fill ] <| el [ centerY ] <| text "URL"
                         , label = Input.labelHidden ""
                         }
+                    , Input.button [ paddingXY 12 8, Border.rounded 4, Background.color redColor, Font.color whiteColor ]
+                        { label = el [] <| Utils.icon "close"
+                        , onPress = Just <| CancelSoundEditButtonPressed sound
+                        }
                     , Input.button [ paddingXY 12 8, Border.rounded 4, Background.color greenColor, Font.color whiteColor ]
-                        { label = text "OK"
-                        , onPress = Nothing
+                        { label = el [] <| Utils.icon "check"
+                        , onPress = Just <| SaveSoundButtonPressed sound
                         }
                     ]
         ]
