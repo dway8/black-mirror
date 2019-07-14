@@ -2,8 +2,8 @@ module Public.Main exposing (main)
 
 import Browser
 import DateUtils
+import Ports exposing (InfoForElm(..), InfoForOutside(..))
 import Public.Model exposing (Model, Msg(..), Weather, Window, fetchLastTweetCmd, fetchMessagesCmd, fetchMybDataCmd, fetchWeatherCmd, initSaint, initTime)
-import Public.Ports as Ports exposing (InfoForElm(..), InfoForOutside(..))
 import Public.View as View
 import RemoteData as RD exposing (RemoteData(..))
 import Time

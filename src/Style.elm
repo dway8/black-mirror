@@ -1,4 +1,4 @@
-module Style exposing (blackColor, errorColor, greenColor, mediumGreyColor, orangeColor, whiteColor, windowRatio)
+module Style exposing (blackColor, greenColor, mediumGreyColor, orangeColor, redColor, whiteColor, windowRatio)
 
 import Element exposing (Color, rgb255)
 import Public.Model exposing (Window)
@@ -24,9 +24,9 @@ greenColor =
     rgb255 100 227 199
 
 
-errorColor : Color
-errorColor =
-    rgb255 255 0 0
+redColor : Color
+redColor =
+    rgb255 247 75 79
 
 
 mediumGreyColor : Color

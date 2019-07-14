@@ -1,7 +1,7 @@
-module Utils exposing (icon, isBigPortrait, isDesktop, ucfirst)
+module Utils exposing (icon, isBigPortrait, isDesktop, ucfirst, viewIf)
 
 import Char
-import Element exposing (Element, html)
+import Element exposing (Element, html, none)
 import Html
 import Html.Attributes as HA
 import Public.Model exposing (Window)
@@ -30,3 +30,12 @@ isBigPortrait window =
 isDesktop : Window -> Bool
 isDesktop window =
     window.width > window.height
+
+
+viewIf : Bool -> Element msg -> Element msg
+viewIf b view =
+    if b then
+        view
+
+    else
+        none

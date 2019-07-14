@@ -1,4 +1,7 @@
+var common = require("../libraries/common");
+
 var backoff = 0;
+
 function createEventSource(es, app, url) {
     if (window.EventSource) {
         es = new EventSource(url);
@@ -17,6 +20,11 @@ function createEventSource(es, app, url) {
                 data: JSON.parse(event.data),
             };
             app.ports.infoForElm.send(res);
+        });
+
+        es.addEventListener("trigger-sound", function(event) {
+            const url = JSON.parse(event.data);
+            common.playAudio(url);
         });
 
         es.addEventListener(

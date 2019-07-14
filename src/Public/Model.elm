@@ -4,9 +4,9 @@ import Http
 import Json.Decode as D
 import Json.Decode.Pipeline as P
 import Model exposing (Message)
+import Ports exposing (InfoForElm)
 import Public.Ephemeris as Ephemeris
 import Public.MybData as MybData exposing (MybData)
-import Public.Ports exposing (InfoForElm)
 import RemoteData as RD exposing (RemoteData(..), WebData)
 import Task
 import Time exposing (Posix, Zone)

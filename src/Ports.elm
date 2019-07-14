@@ -1,4 +1,4 @@
-port module Public.Ports exposing (GenericOutsideData, InfoForElm(..), InfoForOutside(..), getInfoFromOutside, infoForElm, infoForOutside, sendInfoOutside)
+port module Ports exposing (GenericOutsideData, InfoForElm(..), InfoForOutside(..), getInfoFromOutside, infoForElm, infoForOutside, sendInfoOutside)
 
 import Json.Decode as D
 import Json.Decode.Pipeline as P
@@ -31,21 +31,8 @@ port infoForElm : (GenericOutsideData -> msg) -> Sub msg
 sendInfoOutside : InfoForOutside -> Cmd msg
 sendInfoOutside info =
     case info of
-        PlaySound event ->
-            case event of
-                "new_order" ->
-                    infoForOutside { tag = "playCashRegister", data = E.null }
-
-                "new_user" ->
-                    infoForOutside { tag = "playKnock", data = E.null }
-
-                _ ->
-                    Cmd.none
-
-
-
--- PlayFanfare ->
---     infoForOutside { tag = "playFanfare", data = E.null }
+        PlaySound url ->
+            infoForOutside { tag = "playSound", data = E.string url }
 
 
 getInfoFromOutside : (InfoForElm -> msg) -> (String -> msg) -> Sub msg
