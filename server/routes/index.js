@@ -3,6 +3,7 @@ const mybData = require("./mybData.js");
 const sse = require("./sse.js");
 const forecast = require("./forecast.js");
 const tweets = require("./tweets.js");
+const sounds = require("./sounds.js");
 
 module.exports = app => {
     app.use("/api/messages", messages);
@@ -10,4 +11,5 @@ module.exports = app => {
     app.use("/api/sse", sse.router);
     app.use("/api/forecast", forecast);
     app.use("/api/last_tweet", tweets);
+    app.use("/api/sounds", sounds);
 };

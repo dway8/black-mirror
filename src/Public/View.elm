@@ -103,7 +103,7 @@ viewDate : Window -> Zone -> Posix -> Element Msg
 viewDate window zone now =
     column
         [ spacing (windowRatio window 6) ]
-        [ el [ Font.bold, Font.size (windowRatio window 50) ] <| text (Utils.ucfirst (DateUtils.dayOfWeek zone now))
+        [ el [ Font.bold, Font.size (windowRatio window 40) ] <| text (Utils.ucfirst (DateUtils.dayOfWeek zone now))
         , el [ Font.light, Font.size (windowRatio window 32) ] <| text <| DateUtils.dayAndMonth zone now
         ]
 

@@ -1,9 +1,9 @@
-port module Public.Ports exposing (GenericOutsideData, InfoForElm(..), InfoForOutside(..), getInfoFromOutside, infoForElm, infoForOutside, sendInfoOutside)
+port module Ports exposing (GenericOutsideData, InfoForElm(..), InfoForOutside(..), getInfoFromOutside, infoForElm, infoForOutside, sendInfoOutside)
 
 import Json.Decode as D
 import Json.Decode.Pipeline as P
 import Json.Encode as E
-import Model exposing (Message, messagesDecoder)
+import Model exposing (Message, Sound)
 import Public.MybData as MybData exposing (MybData)
 
 
@@ -20,6 +20,7 @@ type InfoForOutside
 type InfoForElm
     = ReceivedMYBEvent MybData String
     | ReceivedMessages (List Message)
+    | ReceivedSounds (List Sound)
 
 
 port infoForOutside : GenericOutsideData -> Cmd msg
@@ -31,21 +32,8 @@ port infoForElm : (GenericOutsideData -> msg) -> Sub msg
 sendInfoOutside : InfoForOutside -> Cmd msg
 sendInfoOutside info =
     case info of
-        PlaySound event ->
-            case event of
-                "new_order" ->
-                    infoForOutside { tag = "playCashRegister", data = E.null }
-
-                "new_user" ->
-                    infoForOutside { tag = "playKnock", data = E.null }
-
-                _ ->
-                    Cmd.none
-
-
-
--- PlayFanfare ->
---     infoForOutside { tag = "playFanfare", data = E.null }
+        PlaySound url ->
+            infoForOutside { tag = "playSound", data = E.string url }
 
 
 getInfoFromOutside : (InfoForElm -> msg) -> (String -> msg) -> Sub msg
@@ -62,9 +50,17 @@ getInfoFromOutside tagger onError =
                             onError "Error when parsing SSE message"
 
                 "receivedMessages" ->
-                    case D.decodeValue messagesDecoder outsideInfo.data of
+                    case D.decodeValue Model.messagesDecoder outsideInfo.data of
                         Ok messages ->
                             tagger <| ReceivedMessages messages
+
+                        Err _ ->
+                            onError "Error when parsing SSE message"
+
+                "receivedSounds" ->
+                    case D.decodeValue Model.soundsDecoder outsideInfo.data of
+                        Ok sounds ->
+                            tagger <| ReceivedSounds sounds
 
                         Err _ ->
                             onError "Error when parsing SSE message"

@@ -2,8 +2,8 @@ module Public.Main exposing (main)
 
 import Browser
 import DateUtils
-import Public.Model exposing (Model, Msg(..), Weather, Window, fetchLastTweetCmd, fetchMessagesCmd, fetchMybDataCmd, fetchWeatherCmd, initSaint, initTime)
-import Public.Ports as Ports exposing (InfoForElm(..), InfoForOutside(..))
+import Ports exposing (InfoForElm(..), InfoForOutside(..))
+import Public.Model exposing (Model, Msg(..), Weather, Window, fetchLastTweetCmd, fetchMessagesCmd, fetchMybDataCmd, fetchSoundsCmd, fetchWeatherCmd, initSaint, initTime)
 import Public.View as View
 import RemoteData as RD exposing (RemoteData(..))
 import Time
@@ -31,6 +31,7 @@ init flags =
       , messages = NotAsked
       , messageCursor = 0
       , counter = 0
+      , sounds = NotAsked
       }
     , initTime
     )
@@ -145,6 +146,9 @@ update msg model =
                 ReceivedMessages messages ->
                     ( { model | messages = Success messages }, Cmd.none )
 
+                ReceivedSounds sounds ->
+                    ( { model | sounds = Success sounds }, Cmd.none )
+
         InitTime ( now, zone ) ->
             let
                 cmds =
@@ -157,6 +161,7 @@ update msg model =
                             , fetchWeatherCmd
                             , fetchLastTweetCmd
                             , fetchMessagesCmd
+                            , fetchSoundsCmd
                             ]
             in
             ( { model | now = now, zone = zone }, cmds )
@@ -180,3 +185,6 @@ update msg model =
 
         IncrementCounter ->
             ( { model | counter = model.counter + 1 }, Cmd.none )
+
+        FetchSoundsResponse response ->
+            ( { model | sounds = response }, Cmd.none )
