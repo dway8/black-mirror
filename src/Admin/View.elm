@@ -134,7 +134,7 @@ viewNewMessage newMessage =
 viewSounds : List Sound -> Element Msg
 viewSounds sounds =
     column
-        [ width fill
+        [ width <| maximum 650 fill
         , Border.widthEach { left = 1, right = 0, bottom = 0, top = 0 }
         , Border.color mediumGreyColor
         , paddingXY 40 0
@@ -142,7 +142,10 @@ viewSounds sounds =
         , spacing 30
         ]
         [ el [ Font.size 20, Font.bold ] <| text "Événements & sons"
-        , column [ spacing 15 ]
+        , column
+            [ spacing 15
+            , width fill
+            ]
             (sounds
                 |> List.filter (\{ event } -> not <| List.member event triggerableEvents)
                 |> List.sortBy (.event >> eventToString)
@@ -153,6 +156,7 @@ viewSounds sounds =
             , Border.widthEach { left = 0, right = 0, bottom = 0, top = 1 }
             , paddingEach { left = 0, right = 0, bottom = 0, top = 20 }
             , Border.color mediumGreyColor
+            , width fill
             ]
             (sounds
                 |> List.filter (\{ event } -> List.member event triggerableEvents)
@@ -161,10 +165,11 @@ viewSounds sounds =
                     (\sound ->
                         row [ spacing 10 ]
                             [ viewSound sound
-                            , Input.button [ paddingXY 12 8, Border.rounded 4, Background.color redColor, Font.color whiteColor ]
-                                { label = text "Déclencher"
-                                , onPress = Just <| TriggerSoundButtonPressed sound
-                                }
+                            , Utils.viewIf (Editable.isReadOnly sound.url) <|
+                                Input.button [ paddingXY 12 8, Border.rounded 4, Background.color redColor, Font.color whiteColor ]
+                                    { label = text "Déclencher"
+                                    , onPress = Just <| TriggerSoundButtonPressed sound
+                                    }
                             ]
                     )
             )
@@ -173,27 +178,30 @@ viewSounds sounds =
 
 viewSound : Sound -> Element Msg
 viewSound ({ event, url } as sound) =
-    row [ spacing 10 ]
-        [ text (eventToString event)
-        , url
-            |> Editable.value
-            |> Maybe.map
-                (\u ->
-                    el
-                        [ htmlAttribute <| HA.title "Lire le son"
-                        , onClick <| SoundIconClicked u
-                        , pointer
-                        ]
-                    <|
-                        Utils.icon "volume-up"
-                )
-            |> Maybe.withDefault (el [] <| Utils.icon "volume-off")
+    row [ spacing 10, width fill ]
+        [ el [ width <| px 100 ] <| text (eventToString event)
+        , el [ width <| px 30, Font.size 20 ]
+            (url
+                |> Editable.value
+                |> Maybe.map
+                    (\u ->
+                        el
+                            [ htmlAttribute <| HA.title "Lire le son"
+                            , onClick <| SoundIconClicked u
+                            , pointer
+                            ]
+                        <|
+                            Utils.icon "volume-up"
+                    )
+                |> Maybe.withDefault (el [ Font.color mediumGreyColor ] <| Utils.icon "volume-off")
+            )
         , case url of
             ReadOnly _ ->
-                Input.button [ paddingXY 12 8, Border.rounded 4, Background.color greenColor, Font.color whiteColor ]
-                    { label = text "Changer"
-                    , onPress = Just <| EditSoundButtonPressed sound
-                    }
+                el [ width <| px 100 ] <|
+                    Input.button [ paddingXY 12 8, Border.rounded 4, Background.color greenColor, Font.color whiteColor ]
+                        { label = text "Changer"
+                        , onPress = Just <| EditSoundButtonPressed sound
+                        }
 
             Editable _ new ->
                 row [ spacing 8 ]
