@@ -2,10 +2,12 @@ module Public.Main exposing (main)
 
 import Browser
 import DateUtils
+import Editable
+import Model exposing (Event(..), Sound)
 import Ports exposing (InfoForElm(..), InfoForOutside(..))
 import Public.Model exposing (Model, Msg(..), Weather, Window, fetchLastTweetCmd, fetchMessagesCmd, fetchMybDataCmd, fetchSoundsCmd, fetchWeatherCmd, initSaint, initTime)
 import Public.View as View
-import RemoteData as RD exposing (RemoteData(..))
+import RemoteData as RD exposing (RemoteData(..), WebData)
 import Time
 
 
@@ -144,7 +146,13 @@ update msg model =
                     )
 
                 ReceivedMessages messages ->
-                    ( { model | messages = Success messages }, Cmd.none )
+                    let
+                        cmd =
+                            findSoundForEvent NewMessage model.sounds
+                                |> Maybe.map (PlaySound >> Ports.sendInfoOutside)
+                                |> Maybe.withDefault Cmd.none
+                    in
+                    ( { model | messages = Success messages }, cmd )
 
                 ReceivedSounds sounds ->
                     ( { model | sounds = Success sounds }, Cmd.none )
@@ -188,3 +196,16 @@ update msg model =
 
         FetchSoundsResponse response ->
             ( { model | sounds = response }, Cmd.none )
+
+
+findSoundForEvent : Event -> WebData (List Sound) -> Maybe String
+findSoundForEvent event rdSounds =
+    case rdSounds of
+        Success sounds ->
+            sounds
+                |> List.filter (\sound -> sound.event == event)
+                |> List.head
+                |> Maybe.andThen (.url >> Editable.value)
+
+        _ ->
+            Nothing
