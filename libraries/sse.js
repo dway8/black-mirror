@@ -11,6 +11,14 @@ function createEventSource(es, app, url) {
             app.ports.infoForElm.send(res);
         });
 
+        es.addEventListener("messages-event", function(event) {
+            var res = {
+                tag: "receivedMessages",
+                data: JSON.parse(event.data),
+            };
+            app.ports.infoForElm.send(res);
+        });
+
         es.addEventListener(
             "error",
             function(e) {

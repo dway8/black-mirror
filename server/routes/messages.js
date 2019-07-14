@@ -3,11 +3,12 @@ const db = require("../db/index.js");
 const logger = require("../logger");
 const winston = logger.loggers.general;
 const requireAuth = require("../middlewares/auth.js");
+const { sse } = require("./sse.js");
 
 const router = new Router();
 
 router.get("/", async (req, res) => {
-    const messages = (await getAllMessages()).filter(m => m.active);
+    const messages = await getActiveMessages();
     res.send(messages);
 });
 
@@ -31,8 +32,9 @@ router
                     [title, content, true]
                 );
 
-                const messages = await getAllMessages();
+                await notifyClients();
 
+                const messages = await getAllMessages();
                 res.json({ success: true, data: messages });
             } catch (err) {
                 winston.error(err.stack);
@@ -57,8 +59,9 @@ router.get("/admin/archive/:id", requireAuth, async (req, res) => {
             id,
         ]);
 
-        const messages = await getAllMessages();
+        await notifyClients();
 
+        const messages = await getAllMessages();
         res.json({ success: true, data: messages });
     } catch (e) {
         winston.error("Error while archiving a message", { e });
@@ -82,6 +85,11 @@ async function getAllMessages() {
     return messages;
 }
 
+async function getActiveMessages() {
+    const messages = (await getAllMessages()).filter(m => m.active);
+    return messages;
+}
+
 function dbToMessagesKeys(data) {
     const dbToMessages = {
         created_at: "createdAt",
@@ -94,6 +102,11 @@ function dbToMessagesKeys(data) {
     }
 
     return newData;
+}
+
+async function notifyClients() {
+    const activeMessages = await getActiveMessages();
+    sse.send(activeMessages, "messages-event");
 }
 
 module.exports = router;

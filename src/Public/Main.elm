@@ -142,6 +142,9 @@ update msg model =
                     , Ports.sendInfoOutside <| PlaySound event
                     )
 
+                ReceivedMessages messages ->
+                    ( { model | messages = Success messages }, Cmd.none )
+
         InitTime ( now, zone ) ->
             let
                 cmds =

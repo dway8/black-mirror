@@ -3,6 +3,7 @@ port module Public.Ports exposing (GenericOutsideData, InfoForElm(..), InfoForOu
 import Json.Decode as D
 import Json.Decode.Pipeline as P
 import Json.Encode as E
+import Model exposing (Message, messagesDecoder)
 import Public.MybData as MybData exposing (MybData)
 
 
@@ -18,6 +19,7 @@ type InfoForOutside
 
 type InfoForElm
     = ReceivedMYBEvent MybData String
+    | ReceivedMessages (List Message)
 
 
 port infoForOutside : GenericOutsideData -> Cmd msg
@@ -56,7 +58,15 @@ getInfoFromOutside tagger onError =
                         Ok ( mybData, event ) ->
                             tagger <| ReceivedMYBEvent mybData event
 
-                        Err e ->
+                        Err _ ->
+                            onError "Error when parsing SSE message"
+
+                "receivedMessages" ->
+                    case D.decodeValue messagesDecoder outsideInfo.data of
+                        Ok messages ->
+                            tagger <| ReceivedMessages messages
+
+                        Err _ ->
                             onError "Error when parsing SSE message"
 
                 _ ->
