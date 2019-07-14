@@ -1,7 +1,9 @@
-module Public.MybData exposing (MybData, mybDataDecoder)
+module Public.MybData exposing (MybData, MybOpening, mybDataDecoder)
 
+import DateUtils
 import Json.Decode as D
 import Json.Decode.Pipeline as P
+import Time exposing (Posix)
 
 
 type alias MybData =
@@ -20,6 +22,13 @@ type alias MybData =
     , todayVA : Int
     , totalVA : Int
     , avgCart : Int
+    , openings : List MybOpening
+    }
+
+
+type alias MybOpening =
+    { name : String
+    , openingDate : Posix
     }
 
 
@@ -41,3 +50,11 @@ mybDataDecoder =
         |> P.required "todayVA" D.int
         |> P.required "totalVA" D.int
         |> P.required "avgCart" D.int
+        |> P.required "openings" (D.list mybOpeningDecoder)
+
+
+mybOpeningDecoder : D.Decoder MybOpening
+mybOpeningDecoder =
+    D.succeed MybOpening
+        |> P.required "name" D.string
+        |> P.required "openingDate" DateUtils.dateDecoder

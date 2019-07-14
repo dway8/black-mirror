@@ -1,4 +1,4 @@
-module Public.Model exposing (ImageSize, Media, Model, Msg(..), Tweet, Weather, Window, fetchLastTweet, fetchMessagesCmd, fetchMybData, fetchWeather, initSaint, initTime)
+module Public.Model exposing (ImageSize, Media, Model, Msg(..), Tweet, Weather, Window, fetchLastTweetCmd, fetchMessagesCmd, fetchMybDataCmd, fetchWeatherCmd, initSaint, initTime)
 
 import Http
 import Json.Decode as D
@@ -22,6 +22,7 @@ type alias Model =
     , window : Window
     , messages : WebData (List Message)
     , messageCursor : Int
+    , counter : Int
     }
 
 
@@ -75,6 +76,7 @@ type Msg
     | FetchMessagesResponse (WebData (List Message))
     | AnimateMessagesAndTweet
     | InfoFromOutside InfoForElm
+    | IncrementCounter
 
 
 initTime : Cmd Msg
@@ -108,8 +110,8 @@ getNewSaint zone now =
             )
 
 
-fetchWeather : Cmd Msg
-fetchWeather =
+fetchWeatherCmd : Cmd Msg
+fetchWeatherCmd =
     Http.get
         { url = "/api/forecast/45.7701213,4.829064300000027?lang=fr&units=si&exclude=minutely,alerts,flags"
         , expect =
@@ -117,8 +119,8 @@ fetchWeather =
         }
 
 
-fetchLastTweet : Cmd Msg
-fetchLastTweet =
+fetchLastTweetCmd : Cmd Msg
+fetchLastTweetCmd =
     Http.get
         { url = "/api/last_tweet"
         , expect =
@@ -126,8 +128,8 @@ fetchLastTweet =
         }
 
 
-fetchMybData : Cmd Msg
-fetchMybData =
+fetchMybDataCmd : Cmd Msg
+fetchMybDataCmd =
     Http.get
         { url = "/api/myb-data"
         , expect = Http.expectJson (RD.fromResult >> FetchMybDataResponse) <| MybData.mybDataDecoder

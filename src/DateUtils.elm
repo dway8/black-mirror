@@ -1,4 +1,4 @@
-module DateUtils exposing (dateDecoder, dateTimeToString, dayAndMonth, dayOfWeek, isNightTime, time)
+module DateUtils exposing (dateDecoder, dateTimeToString, dayAndMonth, dayOfWeek, dayOfWeekShort, isNightTime, time)
 
 import DateFormat as DF
 import DateFormat.Language as DFL exposing (english)
@@ -11,6 +11,7 @@ frenchDateFormat =
     { english
         | toMonthName = frenchMonthName
         , toWeekdayName = frenchDayName
+        , toWeekdayAbbreviation = frenchDayAbbreviation
     }
 
 
@@ -37,6 +38,31 @@ frenchDayName d =
 
         Sun ->
             "dimanche"
+
+
+frenchDayAbbreviation : Time.Weekday -> String
+frenchDayAbbreviation d =
+    case d of
+        Mon ->
+            "lun"
+
+        Tue ->
+            "mar"
+
+        Wed ->
+            "mer"
+
+        Thu ->
+            "jeu"
+
+        Fri ->
+            "vend"
+
+        Sat ->
+            "sam"
+
+        Sun ->
+            "dim"
 
 
 frenchMonthName : Time.Month -> String
@@ -94,6 +120,14 @@ dayOfWeek : Zone -> Posix -> String
 dayOfWeek zone date =
     DF.formatWithLanguage frenchDateFormat
         [ DF.dayOfWeekNameFull ]
+        zone
+        date
+
+
+dayOfWeekShort : Zone -> Posix -> String
+dayOfWeekShort zone date =
+    DF.formatWithLanguage frenchDateFormat
+        [ DF.dayOfWeekNameAbbreviated ]
         zone
         date
 

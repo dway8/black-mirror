@@ -2,7 +2,7 @@ module Public.Main exposing (main)
 
 import Browser
 import DateUtils
-import Public.Model exposing (Model, Msg(..), Weather, Window, fetchLastTweet, fetchMessagesCmd, fetchMybData, fetchWeather, initSaint, initTime)
+import Public.Model exposing (Model, Msg(..), Weather, Window, fetchLastTweetCmd, fetchMessagesCmd, fetchMybDataCmd, fetchWeatherCmd, initSaint, initTime)
 import Public.Ports as Ports exposing (InfoForElm(..), InfoForOutside(..))
 import Public.View as View
 import RemoteData as RD exposing (RemoteData(..))
@@ -30,6 +30,7 @@ init flags =
       , saint = ""
       , messages = NotAsked
       , messageCursor = 0
+      , counter = 0
       }
     , initTime
     )
@@ -77,6 +78,7 @@ subscriptions { zone, now } =
                     [ Time.every (15 * 60 * 1000) <| always FetchWeather
                     , Time.every (15 * 60 * 1000) <| always FetchLastTweet
                     , Time.every (6 * 1000) <| always AnimateMessagesAndTweet
+                    , Time.every (6 * 1000) <| always IncrementCounter
                     , Ports.getInfoFromOutside InfoFromOutside (always NoOp)
                     ]
                )
@@ -147,7 +149,12 @@ update msg model =
                         Cmd.none
 
                     else
-                        Cmd.batch [ fetchMybData, fetchWeather, fetchLastTweet, fetchMessagesCmd ]
+                        Cmd.batch
+                            [ fetchMybDataCmd
+                            , fetchWeatherCmd
+                            , fetchLastTweetCmd
+                            , fetchMessagesCmd
+                            ]
             in
             ( { model | now = now, zone = zone }, cmds )
                 |> initSaint
@@ -160,10 +167,13 @@ update msg model =
                 |> initSaint
 
         MorningFetchMybData ->
-            ( model, fetchMybData )
+            ( model, fetchMybDataCmd )
 
         FetchWeather ->
-            ( model, Cmd.none )
+            ( model, fetchWeatherCmd )
 
         FetchLastTweet ->
-            ( model, Cmd.none )
+            ( model, fetchLastTweetCmd )
+
+        IncrementCounter ->
+            ( { model | counter = model.counter + 1 }, Cmd.none )

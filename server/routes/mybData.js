@@ -6,6 +6,7 @@ const { sse } = require("./sse.js");
 const {
     getCurrentMybData,
     mybDataToDbKeys,
+    getMybOpenings,
 } = require("../services/mybData.js");
 
 const router = new Router();
@@ -14,6 +15,7 @@ router
     .route("/")
     .get(async (req, res) => {
         const mybData = await getCurrentMybData();
+        mybData.openings = await getMybOpenings();
         winston.verbose("mybData: ", mybData);
         res.send(mybData);
     })
@@ -131,6 +133,7 @@ async function handleNewExhibitor() {
 }
 
 async function handleNewProdOccurrence(params) {
+    const { is_new_client, occurrence_id, name, opening_date } = params;
     let {
         id,
         todayClients,
@@ -142,7 +145,7 @@ async function handleNewProdOccurrence(params) {
     todayProdOccurrences++;
     totalProdOccurrences++;
 
-    if (params.is_new_client) {
+    if (is_new_client) {
         todayClients++;
         totalClients++;
     }
@@ -156,6 +159,15 @@ async function handleNewProdOccurrence(params) {
         },
         id
     );
+
+    try {
+        await db.query(
+            "INSERT INTO myb_openings(occurrence_id, name, opening_date) VALUES($1, $2, $3)",
+            [occurrence_id, name, opening_date]
+        );
+    } catch (err) {
+        winston.error(err.stack);
+    }
 }
 
 async function handleNewOpenOccurrence() {

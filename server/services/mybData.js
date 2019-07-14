@@ -34,6 +34,7 @@ function dbToMybDataKeys(data) {
         today_va: "todayVA",
         total_va: "totalVA",
         avg_cart: "avgCart",
+        opening_date: "openingDate",
     };
     const newData = {};
 
@@ -72,5 +73,21 @@ function mybDataToDbKeys(data) {
 
     return newData;
 }
+async function getMybOpenings() {
+    try {
+        const { rows } = await db.query(
+            "SELECT name, ROUND((EXTRACT(epoch FROM opening_date)* 1000)) as opening_date FROM myb_openings WHERE opening_date <= (now() + '7 day'::interval)"
+        );
+        const openings = rows.map(row => {
+            return dbToMybDataKeys(row);
+        });
 
-module.exports = { getCurrentMybData, mybDataToDbKeys };
+        return openings;
+    } catch (err) {
+        winston.error(err.stack);
+
+        return null;
+    }
+}
+
+module.exports = { getCurrentMybData, mybDataToDbKeys, getMybOpenings };

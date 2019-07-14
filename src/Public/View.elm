@@ -11,7 +11,7 @@ import FormatNumber.Locales exposing (frenchLocale)
 import List.Extra as LE
 import Model exposing (Message)
 import Public.Model exposing (Model, Msg, Tweet, Window)
-import Public.MybData exposing (MybData)
+import Public.MybData exposing (MybData, MybOpening)
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
 import Style exposing (blackColor, whiteColor, windowRatio)
@@ -65,7 +65,7 @@ view model =
                                     (case model.mybData of
                                         Success data ->
                                             [ viewCountsMybData model.window data
-                                            , viewMoneyMybData model.window data
+                                            , viewOpeningsAndMoneyMybData model.window model.zone model.counter data
                                             ]
 
                                         _ ->
@@ -132,13 +132,13 @@ viewCountsMybData window { todayUsers, totalUsers, todayOrders, totalOrders, tod
     row
         [ width fill, spaceEvenly ]
         [ column
-            [ spacing 50, alignLeft, centerY ]
+            [ spacing (windowRatio window 22), alignLeft, centerY ]
             [ viewGenericCount window todayUsers totalUsers "Orga."
             , viewGenericCount window todayOrders totalOrders "Résa"
             , viewGenericCount window todayExhibitors totalExhibitors "Exposants"
             ]
         , el [ Border.widthEach { left = 2, top = 0, bottom = 0, right = 0 }, Border.solid, centerX, centerY, height fill, alpha 0.4 ] <| none
-        , column [ spacing 50, alignLeft, centerY ]
+        , column [ spacing (windowRatio window 22), alignLeft, centerY ]
             [ viewGenericCount window todayClients totalClients "Clients"
             , viewGenericCount window todayProdOccurrences totalProdOccurrences "Éd. prod"
             , viewGenericCount window todayOpenOccurrences totalOpenOccurrences "Éd. ouvertes"
@@ -152,7 +152,7 @@ viewGenericCount window todayCount totalCount label =
         [ spacing (windowRatio window 10), centerY, width fill ]
         [ row [ alignLeft, spacing (windowRatio window 10) ]
             [ el [ Font.size (windowRatio window 50) ] <| text "+"
-            , el [ Font.size (windowRatio window 80), Font.bold ] <| text (String.fromInt todayCount)
+            , el [ Font.size (windowRatio window 76), Font.bold ] <| text (String.fromInt todayCount)
             ]
         , column
             [ spacing (windowRatio window 3) ]
@@ -167,6 +167,43 @@ viewGenericCount window todayCount totalCount label =
         ]
 
 
+viewOpeningsAndMoneyMybData : Window -> Zone -> Int -> MybData -> Element Msg
+viewOpeningsAndMoneyMybData window zone counter data =
+    el [ paddingEach { top = windowRatio window 20, bottom = 0, left = 0, right = 0 }, centerX ] <|
+        if modBy 2 counter == 0 && data.openings /= [] then
+            viewOpenings window zone data.openings
+
+        else
+            viewMoneyMybData window data
+
+
+viewOpenings : Window -> Zone -> List MybOpening -> Element Msg
+viewOpenings window zone openings =
+    column [ spacing (windowRatio window 20), width fill ]
+        [ el [ Font.bold, Font.size (windowRatio window 30) ] <| text "Ouvertures J+7"
+        , column [ Font.size (windowRatio window 19), spacing (windowRatio window 13), width fill ]
+            (openings
+                |> List.sortBy (.openingDate >> Time.posixToMillis)
+                |> List.map
+                    (\{ name, openingDate } ->
+                        row [ spacing (windowRatio window 10), width fill ]
+                            [ el [ Font.bold, width <| fillPortion 1 ] <| el [ alignRight ] <| text <| Utils.ucfirst <| DateUtils.dayOfWeekShort zone openingDate ++ "."
+                            , el [ width <| fillPortion 8 ] <| text (cropNameIfTooLong name)
+                            ]
+                    )
+            )
+        ]
+
+
+cropNameIfTooLong : String -> String
+cropNameIfTooLong name =
+    if String.length name > 45 then
+        String.left 45 name ++ "..."
+
+    else
+        name
+
+
 viewMoneyMybData : Window -> MybData -> Element Msg
 viewMoneyMybData window data =
     let
@@ -177,7 +214,7 @@ viewMoneyMybData window data =
                 |> FN.format { frenchLocale | decimals = 0 }
                 |> (\i -> i ++ "€")
     in
-    column [ spacing (windowRatio window 14), centerX, paddingEach { top = windowRatio window 20, bottom = 0, left = 0, right = 0 } ]
+    column [ spacing (windowRatio window 14), centerX ]
         [ row
             [ spacing (windowRatio window 22)
             , centerX
