@@ -54,42 +54,6 @@ app.listen(port, function() {
     console.log(`Listening on port ${port}!`);
 });
 
-// MYB DATA //////////////
-//////////////////////////
-
-// CRON
-
-// const resetDataCron = new CronJob("00 00 00 * * *", () => {
-//     winston.verbose("Resetting day data");
-//     try {
-//         resetDayMybData();
-//     } catch (e) {
-//         winston.error("Error when resetting day data", { e });
-//     }
-// });
-// resetDataCron.start();
-//
-// function resetDayMybData() {
-//     let yesterdayMybData = getCurrentMybData();
-//
-//     let newData = {
-//         ...yesterdayMybData,
-//         todayUsers: 0,
-//         todayOrders: 0,
-//         todayExhibitors: 0,
-//         todayClients: 0,
-//         todayProdOccurrences: 0,
-//         todayOpenOccurrences: 0,
-//         date: getTodayMidnight(),
-//     };
-//     delete newData.id;
-//
-//     winston.verbose("Inserting new row in MYB data", newData);
-//     db.get("myb_data")
-//         .insert(newData)
-//         .write();
-// }
-
 process.on("SIGINT", () => {
     console.log("Bye bye!");
     process.exit();

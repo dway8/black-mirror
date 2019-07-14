@@ -122,14 +122,6 @@ if (!isDev) {
     );
 }
 
-function create_access_logger_stream(level) {
-    return {
-        write: function(msg) {
-            access_logger.log(level, msg.substr(0, msg.length - 1));
-        },
-    };
-}
-
 /*
  * ---- MODULE ----
  */
