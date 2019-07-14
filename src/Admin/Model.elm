@@ -41,6 +41,7 @@ type Msg
     | GotFetchSoundsResponse (WebData (List Sound))
     | SoundIconClicked String
     | TriggerSoundButtonPressed Sound
+    | EditSoundButtonPressed Sound
 
 
 type ApiResponse a

@@ -1,6 +1,7 @@
 module Model exposing (Event(..), Message, Sound, eventDecoder, eventToString, messagesDecoder, soundDecoder, soundsDecoder)
 
 import DateUtils
+import Editable exposing (Editable(..))
 import Json.Decode as D
 import Json.Decode.Pipeline as P
 import Time exposing (Posix)
@@ -33,7 +34,7 @@ messageDecoder =
 type alias Sound =
     { id : Int
     , event : Event
-    , url : Maybe String
+    , url : Editable (Maybe String)
     }
 
 
@@ -56,7 +57,7 @@ soundDecoder =
     D.succeed Sound
         |> P.required "id" D.int
         |> P.required "event" eventDecoder
-        |> P.required "url" (D.nullable D.string)
+        |> P.required "url" (D.map ReadOnly <| D.nullable D.string)
 
 
 eventDecoder : D.Decoder Event

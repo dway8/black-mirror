@@ -3,10 +3,11 @@ module Admin.Main exposing (main)
 import Admin.Model exposing (ApiResponse(..), EditableData(..), Flags, Model, Msg(..), archiveMessageCmd, fetchMessagesCmd, fetchSoundsCmd, saveMessageCmd, triggerSoundCmd)
 import Admin.View as View
 import Browser
+import Editable
 import Element exposing (..)
 import Model exposing (Message)
 import Ports exposing (InfoForOutside(..))
-import RemoteData exposing (RemoteData(..))
+import RemoteData as RD exposing (RemoteData(..))
 import Task
 import Time
 
@@ -118,6 +119,30 @@ update msg model =
 
         TriggerSoundButtonPressed sound ->
             ( model, triggerSoundCmd sound.id )
+
+        EditSoundButtonPressed sound ->
+            let
+                newSounds =
+                    model.sounds
+                        |> RD.map
+                            (\sounds ->
+                                sounds
+                                    |> List.map
+                                        (\s ->
+                                            if s.id == sound.id then
+                                                { s
+                                                    | url =
+                                                        s.url
+                                                            |> Editable.edit
+                                                            |> Editable.map identity
+                                                }
+
+                                            else
+                                                s
+                                        )
+                            )
+            in
+            ( { model | sounds = newSounds }, Cmd.none )
 
 
 initMessage : Message

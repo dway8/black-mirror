@@ -3,6 +3,7 @@ module Admin.View exposing (view)
 import Admin.Model exposing (EditableData(..), Model, Msg(..))
 import Browser exposing (Document)
 import DateUtils
+import Editable exposing (Editable(..))
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
@@ -170,10 +171,11 @@ viewSounds sounds =
 
 
 viewSound : Sound -> Element Msg
-viewSound { event, url } =
+viewSound ({ event, url } as sound) =
     row [ spacing 10 ]
         [ text (eventToString event)
         , url
+            |> Editable.value
             |> Maybe.map
                 (\u ->
                     el
@@ -185,6 +187,26 @@ viewSound { event, url } =
                         Utils.icon "volume-up"
                 )
             |> Maybe.withDefault (el [] <| Utils.icon "volume-off")
+        , case url of
+            ReadOnly _ ->
+                Input.button [ paddingXY 12 8, Border.rounded 4, Background.color greenColor, Font.color whiteColor ]
+                    { label = text "Changer"
+                    , onPress = Just <| EditSoundButtonPressed sound
+                    }
+
+            Editable _ new ->
+                row [ spacing 10 ]
+                    [ Input.text [ width <| px 200, Border.solid, Border.width 1, Border.color mediumGreyColor, Border.rounded 4, paddingXY 13 7 ]
+                        { onChange = always NoOp
+                        , text = new |> Maybe.withDefault ""
+                        , placeholder = Nothing
+                        , label = Input.labelHidden ""
+                        }
+                    , Input.button [ paddingXY 12 8, Border.rounded 4, Background.color greenColor, Font.color whiteColor ]
+                        { label = text "OK"
+                        , onPress = Nothing
+                        }
+                    ]
         ]
 
 
