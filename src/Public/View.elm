@@ -118,7 +118,7 @@ viewSaint window saint =
     row
         [ spacing (windowRatio window 10), Font.bold, Font.size (windowRatio window 22) ]
         [ el [] <| Utils.icon "chevron-right zmdi-hc-lg"
-        , el [] <| text saint
+        , el [] <| text (cropNameIfLongerThan 20 saint)
         ]
 
 
@@ -188,17 +188,17 @@ viewOpenings window zone openings =
                     (\{ name, openingDate } ->
                         row [ spacing (windowRatio window 10), width fill ]
                             [ el [ Font.bold, width <| fillPortion 1 ] <| el [ alignRight ] <| text <| Utils.ucfirst <| DateUtils.dayOfWeekShort zone openingDate ++ "."
-                            , el [ width <| fillPortion 8 ] <| text (cropNameIfTooLong name)
+                            , el [ width <| fillPortion 8 ] <| text (cropNameIfLongerThan 45 name)
                             ]
                     )
             )
         ]
 
 
-cropNameIfTooLong : String -> String
-cropNameIfTooLong name =
-    if String.length name > 45 then
-        String.left 45 name ++ "..."
+cropNameIfLongerThan : Int -> String -> String
+cropNameIfLongerThan max name =
+    if String.length name > max then
+        String.left max name ++ "..."
 
     else
         name
