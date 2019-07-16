@@ -258,14 +258,14 @@ viewMessagesAndTweet window messageCursor rdMessages tweet =
                     column
                         [ Background.color whiteColor
                         , Font.color blackColor
-                        , centerX
+                        , width fill
                         , centerY
                         , Border.rounded (windowRatio window 14)
-                        , paddingEach { top = windowRatio window 20, bottom = windowRatio window 28, left = windowRatio window 20, right = windowRatio window 20 }
-                        , spacing (windowRatio window 15)
+                        , paddingEach { top = windowRatio window 18, bottom = windowRatio window 26, left = windowRatio window 18, right = windowRatio window 18 }
+                        , spacing (windowRatio window 14)
                         ]
-                        [ paragraph [ Font.size (windowRatio window 30), Font.bold ] [ text message.title ]
-                        , paragraph [ Font.size (windowRatio window 28) ] [ text message.content ]
+                        [ paragraph [ Font.size (windowRatio window 28), Font.bold ] [ text message.title ]
+                        , paragraph [ Font.size (windowRatio window 24) ] [ text message.content ]
                         ]
 
         _ ->
