@@ -28,7 +28,12 @@ router.get("/", (req, res) => {
             } else if (response.statusCode !== 200) {
                 winston.error("Status:", response.statusCode);
             } else {
-                res.send(body);
+                const tweets = body;
+                let lastTweet = null;
+                if (tweets.length > 0) {
+                    lastTweet = tweets[0];
+                }
+                res.send(lastTweet);
             }
         }
     );

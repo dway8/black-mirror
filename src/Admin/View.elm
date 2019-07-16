@@ -45,7 +45,7 @@ view model =
                                 , label =
                                     row [ padding 6, Border.rounded 4, Background.color greenColor, Font.color whiteColor, alignBottom, padding 10, spacing 10 ]
                                         [ el [] <| Utils.icon "open-in-new"
-                                        , text "Ouvrir le miroir"
+                                        , text "Afficher le miroir"
                                         ]
                                 }
                         ]

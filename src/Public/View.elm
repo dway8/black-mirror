@@ -251,7 +251,7 @@ viewMessagesAndTweet window counter messageCursor rdMessages tweet =
                 in
                 case currentMessage of
                     Nothing ->
-                        viewTweet tweet
+                        viewTweet window tweet
 
                     Just message ->
                         column
@@ -268,24 +268,24 @@ viewMessagesAndTweet window counter messageCursor rdMessages tweet =
                             ]
 
             _ ->
-                viewTweet tweet
+                viewTweet window tweet
 
     else
         none
 
 
-viewTweet : WebData Tweet -> Element Msg
-viewTweet tweet =
+viewTweet : Window -> WebData Tweet -> Element Msg
+viewTweet window tweet =
     case tweet of
         Success t ->
             row
-                [ spacing 40, centerY, width fill ]
+                [ spacing (windowRatio window 40), width fill, alignBottom ]
                 [ case t.media of
                     photo :: [] ->
                         el [] <|
                             image
-                                [ width <| px (round (photo.size.width * 0.5))
-                                , height <| px (round (photo.size.height * 0.5))
+                                [ width <| px (windowRatio window (photo.size.width * 0.4))
+                                , height <| px (windowRatio window (photo.size.height * 0.4))
                                 ]
                                 { src = photo.mediaUrl, description = "" }
 
