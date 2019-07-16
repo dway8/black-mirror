@@ -7,11 +7,7 @@ const { sse } = require("./sse.js");
 
 const router = new Router();
 
-// const NEW_ORDER = "new_order";
-// const NEW_PROD_OCCURRENCE = "new_prod_occurrence";
-// const NEW_USER = "new_user";
-
-router.get("/", requireAuth, async (req, res) => {
+router.get("/", async (req, res) => {
     const sounds = await getAllSounds();
     res.send(sounds);
 });

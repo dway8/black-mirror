@@ -37,7 +37,18 @@ view model =
                 ]
             <|
                 column [ width fill, height fill, spacing 50 ]
-                    [ el [ Font.bold, Font.size 30 ] <| text "Admin Black Mirror"
+                    [ row [ width fill ]
+                        [ el [ Font.bold, Font.size 30 ] <| text "Admin Black Mirror"
+                        , el [ alignRight ] <|
+                            newTabLink []
+                                { url = "/"
+                                , label =
+                                    row [ padding 6, Border.rounded 4, Background.color greenColor, Font.color whiteColor, alignBottom, padding 10, spacing 10 ]
+                                        [ el [] <| Utils.icon "open-in-new"
+                                        , text "Ouvrir le miroir"
+                                        ]
+                                }
+                        ]
                     , row [ width fill ]
                         [ case model.messages of
                             Success messages ->
