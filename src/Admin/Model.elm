@@ -1,4 +1,4 @@
-module Admin.Model exposing (ApiResponse(..), EditableData(..), Flags, Model, Msg(..), apiResponseDecoder, archiveMessageCmd, encodeMessage, fetchMessagesCmd, fetchSoundsCmd, saveMessageCmd, saveSoundCmd, triggerSoundCmd)
+module Admin.Model exposing (ApiResponse(..), EditableData(..), Flags, Model, Msg(..), apiResponseDecoder, archiveMessageCmd, deleteMessageCmd, encodeMessage, fetchMessagesCmd, fetchSoundsCmd, saveMessageCmd, saveSoundCmd, triggerSoundCmd)
 
 import Editable
 import Http
@@ -37,6 +37,7 @@ type Msg
     | SaveMessageButtonPressed
     | GotSaveMessageResponse (WebData (ApiResponse (List Message)))
     | ArchiveMessageButtonPressed Message
+    | DeleteMessageButtonPressed Message
     | GotArchiveMessageResponse (WebData (ApiResponse (List Message)))
     | InitZone Zone
     | GotFetchSoundsResponse (WebData (List Sound))
@@ -84,6 +85,15 @@ archiveMessageCmd : Message -> Cmd Msg
 archiveMessageCmd message =
     Http.get
         { url = "/api/messages/admin/archive/" ++ String.fromInt message.id
+        , expect =
+            Http.expectJson (RD.fromResult >> GotArchiveMessageResponse) (apiResponseDecoder Model.messagesDecoder)
+        }
+
+
+deleteMessageCmd : Message -> Cmd Msg
+deleteMessageCmd message =
+    Http.get
+        { url = "/api/messages/admin/delete/" ++ String.fromInt message.id
         , expect =
             Http.expectJson (RD.fromResult >> GotArchiveMessageResponse) (apiResponseDecoder Model.messagesDecoder)
         }

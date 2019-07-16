@@ -19,7 +19,7 @@ type InfoForOutside
 
 type InfoForElm
     = ReceivedMYBEvent MybData Event
-    | ReceivedMessages (List Message)
+    | ReceivedMessages (List Message) Bool
     | ReceivedSounds (List Sound)
 
 
@@ -50,9 +50,9 @@ getInfoFromOutside tagger onError =
                             onError "Error when parsing SSE message"
 
                 "receivedMessages" ->
-                    case D.decodeValue Model.messagesDecoder outsideInfo.data of
-                        Ok messages ->
-                            tagger <| ReceivedMessages messages
+                    case D.decodeValue messagesEventDecoder outsideInfo.data of
+                        Ok ( messages, isNew ) ->
+                            tagger <| ReceivedMessages messages isNew
 
                         Err _ ->
                             onError "Error when parsing SSE message"
@@ -75,3 +75,10 @@ mybEventDecoder =
     D.succeed Tuple.pair
         |> P.required "data" MybData.mybDataDecoder
         |> P.required "event" Model.eventDecoder
+
+
+messagesEventDecoder : D.Decoder ( List Message, Bool )
+messagesEventDecoder =
+    D.succeed Tuple.pair
+        |> P.required "messages" Model.messagesDecoder
+        |> P.required "isNew" D.bool

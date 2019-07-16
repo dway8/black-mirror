@@ -1,6 +1,6 @@
 module Admin.Main exposing (main)
 
-import Admin.Model exposing (ApiResponse(..), EditableData(..), Flags, Model, Msg(..), archiveMessageCmd, fetchMessagesCmd, fetchSoundsCmd, saveMessageCmd, saveSoundCmd, triggerSoundCmd)
+import Admin.Model exposing (ApiResponse(..), EditableData(..), Flags, Model, Msg(..), archiveMessageCmd, deleteMessageCmd, fetchMessagesCmd, fetchSoundsCmd, saveMessageCmd, saveSoundCmd, triggerSoundCmd)
 import Admin.View as View
 import Browser
 import Editable
@@ -99,6 +99,9 @@ update msg model =
 
         ArchiveMessageButtonPressed message ->
             ( model, archiveMessageCmd message )
+
+        DeleteMessageButtonPressed message ->
+            ( model, deleteMessageCmd message )
 
         GotArchiveMessageResponse response ->
             case response of

@@ -144,7 +144,6 @@ update msg model =
                     let
                         cmd =
                             findSoundForEvent event model.sounds
-                                |> Debug.log "found"
                                 |> Maybe.map (PlaySound >> Ports.sendInfoOutside)
                                 |> Maybe.withDefault Cmd.none
                     in
@@ -152,12 +151,16 @@ update msg model =
                     , cmd
                     )
 
-                ReceivedMessages messages ->
+                ReceivedMessages messages isNew ->
                     let
                         cmd =
-                            findSoundForEvent NewMessage model.sounds
-                                |> Maybe.map (PlaySound >> Ports.sendInfoOutside)
-                                |> Maybe.withDefault Cmd.none
+                            if isNew then
+                                findSoundForEvent NewMessage model.sounds
+                                    |> Maybe.map (PlaySound >> Ports.sendInfoOutside)
+                                    |> Maybe.withDefault Cmd.none
+
+                            else
+                                Cmd.none
                     in
                     ( { model | messages = Success messages }, cmd )
 

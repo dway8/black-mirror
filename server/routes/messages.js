@@ -32,7 +32,7 @@ router
                     [title, content, true]
                 );
 
-                await notifyClients();
+                await notifyClients(true);
 
                 const messages = await getAllMessages();
                 res.json({ success: true, data: messages });
@@ -59,12 +59,29 @@ router.get("/admin/archive/:id", requireAuth, async (req, res) => {
             id,
         ]);
 
-        await notifyClients();
+        await notifyClients(false);
 
         const messages = await getAllMessages();
         res.json({ success: true, data: messages });
     } catch (e) {
         winston.error("Error while archiving a message", { e });
+        res.send({ success: false, error: "Une erreur s'est produite" });
+    }
+});
+
+router.get("/admin/delete/:id", requireAuth, async (req, res) => {
+    try {
+        const { id } = req.params;
+        winston.verbose(`Deleting message ${id}`);
+
+        await db.query("DELETE FROM messages WHERE id = $1", [id]);
+
+        await notifyClients(false);
+
+        const messages = await getAllMessages();
+        res.json({ success: true, data: messages });
+    } catch (e) {
+        winston.error("Error while deleting a message", { e });
         res.send({ success: false, error: "Une erreur s'est produite" });
     }
 });
@@ -104,9 +121,9 @@ function dbToMessagesKeys(data) {
     return newData;
 }
 
-async function notifyClients() {
-    const activeMessages = await getActiveMessages();
-    sse.send(activeMessages, "messages-event");
+async function notifyClients(isNew) {
+    const messages = await getActiveMessages();
+    sse.send({ messages, isNew }, "messages-event");
 }
 
 module.exports = router;

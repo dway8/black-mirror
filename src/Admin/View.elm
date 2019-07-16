@@ -102,7 +102,11 @@ viewMessages zone messages =
 
                                   else
                                     el [ Font.color mediumGreyColor ] <| text "Archivé"
-                                , el [ Font.light, Font.italic, Font.size 14 ] <| text <| "Créé le " ++ DateUtils.dateTimeToString zone message.createdAt
+                                , el [ Font.light, Font.italic, Font.size 14 ] <| text <| DateUtils.dateTimeToString zone message.createdAt
+                                , Input.button [ width <| px 25, height <| px 25, Border.rounded 4, Background.color redColor, Font.color whiteColor, htmlAttribute <| HA.title "Supprimer le message" ]
+                                    { label = el [ centerX, centerY ] <| Utils.icon "close"
+                                    , onPress = Just <| DeleteMessageButtonPressed message
+                                    }
                                 ]
                         )
                 )
