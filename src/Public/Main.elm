@@ -80,7 +80,7 @@ subscriptions { zone, now } =
                 else
                     [ Time.every (15 * 60 * 1000) <| always FetchWeather
                     , Time.every (15 * 60 * 1000) <| always FetchLastTweet
-                    , Time.every (6 * 1000) <| always AnimateMessagesAndTweet
+                    , Time.every (3 * 1000) <| always AnimateMessagesAndTweet
                     , Time.every (6 * 1000) <| always IncrementCounter
                     , Ports.getInfoFromOutside InfoFromOutside (always NoOp)
                     ]

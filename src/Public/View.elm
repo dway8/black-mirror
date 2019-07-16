@@ -62,17 +62,15 @@ view model =
                                     [ el [ centerX, centerY, Font.size (windowRatio model.window 150) ] <| Utils.icon "notifications-paused" ]
 
                                 else
-                                    (case model.mybData of
+                                    case model.mybData of
                                         Success data ->
                                             [ viewCountsMybData model.window data
                                             , viewOpeningsAndMoneyMybData model.window model.zone model.counter data
+                                            , viewMessagesAndTweet model.window model.counter model.messageCursor model.messages model.lastTweet
                                             ]
 
                                         _ ->
                                             [ el [ centerX, centerY ] <| text "Chargement..." ]
-                                    )
-                                        ++ [ viewMessagesAndTweet model.window model.messageCursor model.messages model.lastTweet
-                                           ]
                                )
                         )
     }
@@ -242,34 +240,38 @@ viewMoneyMybData window data =
         ]
 
 
-viewMessagesAndTweet : Window -> Int -> WebData (List Message) -> WebData Tweet -> Element Msg
-viewMessagesAndTweet window messageCursor rdMessages tweet =
-    case rdMessages of
-        Success messages ->
-            let
-                currentMessage =
-                    LE.getAt messageCursor messages
-            in
-            case currentMessage of
-                Nothing ->
-                    viewTweet tweet
+viewMessagesAndTweet : Window -> Int -> Int -> WebData (List Message) -> WebData Tweet -> Element Msg
+viewMessagesAndTweet window counter messageCursor rdMessages tweet =
+    if modBy 2 counter == 1 then
+        case rdMessages of
+            Success messages ->
+                let
+                    currentMessage =
+                        LE.getAt messageCursor messages
+                in
+                case currentMessage of
+                    Nothing ->
+                        viewTweet tweet
 
-                Just message ->
-                    column
-                        [ Background.color whiteColor
-                        , Font.color blackColor
-                        , width fill
-                        , centerY
-                        , Border.rounded (windowRatio window 14)
-                        , paddingEach { top = windowRatio window 18, bottom = windowRatio window 26, left = windowRatio window 18, right = windowRatio window 18 }
-                        , spacing (windowRatio window 14)
-                        ]
-                        [ paragraph [ Font.size (windowRatio window 28), Font.bold ] [ text message.title ]
-                        , paragraph [ Font.size (windowRatio window 24) ] [ text message.content ]
-                        ]
+                    Just message ->
+                        column
+                            [ Background.color whiteColor
+                            , Font.color blackColor
+                            , width fill
+                            , centerY
+                            , Border.rounded (windowRatio window 14)
+                            , paddingEach { top = windowRatio window 18, bottom = windowRatio window 26, left = windowRatio window 18, right = windowRatio window 18 }
+                            , spacing (windowRatio window 14)
+                            ]
+                            [ paragraph [ Font.size (windowRatio window 28), Font.bold ] [ text message.title ]
+                            , paragraph [ Font.size (windowRatio window 24) ] [ text message.content ]
+                            ]
 
-        _ ->
-            viewTweet tweet
+            _ ->
+                viewTweet tweet
+
+    else
+        none
 
 
 viewTweet : WebData Tweet -> Element Msg
