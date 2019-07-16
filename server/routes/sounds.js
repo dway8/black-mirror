@@ -63,6 +63,7 @@ async function getAllSounds() {
     }
     return sounds;
 }
+
 async function pushSoundsToClients(sounds) {
     sse.send(sounds, "sounds-event");
 }

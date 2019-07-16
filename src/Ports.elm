@@ -3,7 +3,7 @@ port module Ports exposing (GenericOutsideData, InfoForElm(..), InfoForOutside(.
 import Json.Decode as D
 import Json.Decode.Pipeline as P
 import Json.Encode as E
-import Model exposing (Message, Sound)
+import Model exposing (Event, Message, Sound)
 import Public.MybData as MybData exposing (MybData)
 
 
@@ -18,7 +18,7 @@ type InfoForOutside
 
 
 type InfoForElm
-    = ReceivedMYBEvent MybData String
+    = ReceivedMYBEvent MybData Event
     | ReceivedMessages (List Message)
     | ReceivedSounds (List Sound)
 
@@ -70,8 +70,8 @@ getInfoFromOutside tagger onError =
         )
 
 
-mybEventDecoder : D.Decoder ( MybData, String )
+mybEventDecoder : D.Decoder ( MybData, Event )
 mybEventDecoder =
     D.succeed Tuple.pair
         |> P.required "data" MybData.mybDataDecoder
-        |> P.required "event" D.string
+        |> P.required "event" Model.eventDecoder

@@ -141,8 +141,15 @@ update msg model =
         InfoFromOutside info ->
             case info of
                 ReceivedMYBEvent mybData event ->
+                    let
+                        cmd =
+                            findSoundForEvent event model.sounds
+                                |> Debug.log "found"
+                                |> Maybe.map (PlaySound >> Ports.sendInfoOutside)
+                                |> Maybe.withDefault Cmd.none
+                    in
                     ( { model | mybData = Success mybData }
-                    , Ports.sendInfoOutside <| PlaySound event
+                    , cmd
                     )
 
                 ReceivedMessages messages ->

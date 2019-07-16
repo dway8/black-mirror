@@ -45,7 +45,8 @@ router
             event = "new_open_occurrence";
         }
 
-        const currentMybData = await getCurrentMybData();
+        let currentMybData = await getCurrentMybData();
+        currentMybData.openings = await getMybOpenings();
 
         sse.send({ data: currentMybData, event }, "MYB-event");
     });
