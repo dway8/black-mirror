@@ -10,6 +10,6 @@ module.exports = app => {
     app.use("/api/myb-data", mybData);
     app.use("/api/sse", sse.router);
     app.use("/api/forecast", forecast);
-    app.use("/api/last_tweet", tweets);
+    app.use("/api/last-tweet", tweets);
     app.use("/api/sounds", sounds);
 };

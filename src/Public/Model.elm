@@ -124,7 +124,7 @@ fetchWeatherCmd =
 fetchLastTweetCmd : Cmd Msg
 fetchLastTweetCmd =
     Http.get
-        { url = "/api/last_tweet"
+        { url = "/api/last-tweet"
         , expect =
             Http.expectJson (RD.fromResult >> FetchLastTweetResponse) tweetDecoder
         }

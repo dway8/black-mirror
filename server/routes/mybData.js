@@ -24,25 +24,36 @@ router
         const params = req.body;
         winston.verbose("Received params from MYB", params);
 
-        let event;
-        if (params.new_user) {
-            handleNewUser();
-            event = "new_user";
-        } else if (params.new_order && params.amount) {
-            await handleNewOrder(params);
-            event = "new_order";
-        } else if (params.order_cancelled && params.amount) {
-            await handleOrderCancelled(params);
-            event = "order_cancelled";
-        } else if (params.new_exhibitor) {
-            await handleNewExhibitor();
-            event = "new_exhibitor";
-        } else if (params.new_prod_occurrence) {
-            await handleNewProdOccurrence(params);
-            event = "new_prod_occurrence";
-        } else if (params.new_open_occurrence) {
-            await handleNewOpenOccurrence();
-            event = "new_open_occurrence";
+        const event = params.event;
+
+        switch (event) {
+            case "new_user":
+                await handleNewUser();
+                break;
+            case "new_order":
+                if (params.amount) {
+                    await handleNewOrder(params);
+                }
+                break;
+            case "order_cancelled":
+                if (params.amount) {
+                    await handleOrderCancelled(params);
+                }
+                break;
+            case "new_exhibitor":
+                await handleNewExhibitor();
+                break;
+            case "new_prod_occurrence":
+                await handleNewProdOccurrence(params);
+                break;
+            case "new_open_occurrence":
+                await handleNewOpenOccurrence();
+                break;
+            case "user_deleted":
+                await handleUserDeleted(params);
+                break;
+            default:
+                break;
         }
 
         let currentMybData = await getCurrentMybData();
@@ -79,11 +90,6 @@ async function handleNewOrder(params) {
     todayVA = todayVA + parseFloat(params.amount);
     totalVA = totalVA + parseFloat(params.amount);
     avgCart = Math.round(totalVA / 100 / totalOrders);
-
-    if (params.is_new_exhibitor) {
-        todayExhibitors++;
-        totalExhibitors++;
-    }
 
     await updateTodayMybData(
         {
@@ -187,6 +193,19 @@ async function handleNewOpenOccurrence() {
         },
         id
     );
+}
+
+async function handleUserDeleted(params) {
+    let { id, todayUsers, totalUsers } = await getCurrentMybData();
+
+    totalUsers--;
+
+    const userRegistrationDate = new Date(params.date * 1000);
+    if (userRegistrationDate >= getTodayMidnight()) {
+        todayUsers--;
+    }
+
+    await updateTodayMybData({ totalUsers, todayUsers }, id);
 }
 
 // DB
