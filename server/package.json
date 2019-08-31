@@ -20,9 +20,6 @@
     "express-sse": "^0.5.1",
     "nodemon": "^1.18.10",
     "path": "^0.12.7",
-    "pg": "^7.11.0",
-    "request": "^2.88.0",
-    "winston": "^3.2.1",
-    "winston-daily-rotate-file": "^3.8.0"
+    "request": "^2.88.0"
   }
 }

@@ -36,7 +36,10 @@
     "http-server": "^0.11.1",
     "webpack": "^4.10.2",
     "webpack-cli": "^3.1.2",
-    "webpack-merge": "^4.1.2"
+    "webpack-merge": "^4.1.2",
+    "pg": "^7.11.0",
+    "winston": "^3.2.1",
+    "winston-daily-rotate-file": "^3.8.0"
   },
   "prettier": {
     "tabWidth": 4,
