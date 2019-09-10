@@ -62,6 +62,16 @@ router
         sse.send({ data: currentMybData, event }, "MYB-event");
     });
 
+router.post("/update", async (req, res) => {
+    res.send({ message: "OK" });
+    const params = req.body;
+    winston.verbose("Updating MYB data with", params);
+
+    let { id } = await getCurrentMybData();
+    await updateTodayMybData(params, id);
+    winston.verbose("OK! Updated.");
+});
+
 async function handleNewUser() {
     let { id, todayUsers, totalUsers } = await getCurrentMybData();
 
