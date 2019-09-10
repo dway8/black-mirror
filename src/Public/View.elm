@@ -243,23 +243,23 @@ viewMoneyMybData window data =
 
 viewMessagesAndTweet : Window -> Int -> Int -> WebData (List Message) -> WebData Tweet -> Element Msg
 viewMessagesAndTweet window counter messageCursor rdMessages tweet =
-    if modBy 2 counter == 1 then
-        case rdMessages of
-            Success messages ->
-                let
-                    currentMessage =
-                        LE.getAt messageCursor messages
-                in
-                case currentMessage of
-                    Nothing ->
-                        viewTweet window tweet
+    -- if modBy 2 counter == 1 then
+    case rdMessages of
+        Success messages ->
+            let
+                currentMessage =
+                    LE.getAt messageCursor messages
+            in
+            case currentMessage of
+                Nothing ->
+                    viewTweet window tweet
 
-                    Just message ->
+                Just message ->
+                    el [ paddingEach { top = 0, bottom = windowRatio window 30, left = windowRatio window 30, right = windowRatio window 30 }, width fill, centerY ] <|
                         column
                             [ Background.color whiteColor
                             , Font.color blackColor
                             , width fill
-                            , centerY
                             , Border.rounded (windowRatio window 14)
                             , paddingEach { top = windowRatio window 18, bottom = windowRatio window 26, left = windowRatio window 18, right = windowRatio window 18 }
                             , spacing (windowRatio window 14)
@@ -268,11 +268,13 @@ viewMessagesAndTweet window counter messageCursor rdMessages tweet =
                             , paragraph [ Font.size (windowRatio window 24) ] [ text message.content ]
                             ]
 
-            _ ->
-                viewTweet window tweet
+        _ ->
+            viewTweet window tweet
 
-    else
-        none
+
+
+-- else
+--     none
 
 
 viewTweet : Window -> WebData Tweet -> Element Msg
@@ -280,7 +282,7 @@ viewTweet window tweet =
     case tweet of
         Success t ->
             row
-                [ spacing (windowRatio window 40), width fill, alignBottom ]
+                [ paddingEach { top = 0, bottom = windowRatio window 30, left = windowRatio window 30, right = windowRatio window 30 }, spacing (windowRatio window 40), width fill, alignBottom ]
                 [ case t.media of
                     photo :: [] ->
                         el [] <|
