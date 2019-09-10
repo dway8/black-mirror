@@ -44,7 +44,7 @@ view model =
                      , Font.color whiteColor
                      ]
                         ++ (if Utils.isDesktop model.window then
-                                [ centerY, padding 30, width <| px 500, height <| px 889 ]
+                                [ centerY, width <| px 500, height <| px 889 ]
 
                             else
                                 [ width fill, height fill ]
@@ -89,8 +89,8 @@ viewHeader { zone, now, window, saint, weather } =
             [ width fill, spaceEvenly ]
             [ viewSaint window saint
             , row
-                [ centerY, Font.size (windowRatio window 44), alignRight, moveRight (toFloat (windowRatio window 20)) ]
-                [ el [ Font.bold, moveRight (toFloat (windowRatio window 20)) ] <| text (Round.round 1 weather.temperature ++ "°")
+                [ centerY, Font.size (windowRatio window 44), alignRight ]
+                [ el [ Font.bold ] <| text (Round.round 1 weather.temperature ++ "°")
                 , viewWeatherIcon window weather.icon
                 ]
             ]
@@ -122,7 +122,8 @@ viewSaint window saint =
 
 viewWeatherIcon : Window -> String -> Element Msg
 viewWeatherIcon window icon =
-    image [ width (px (windowRatio window 100)) ] { src = getSvgIcon icon, description = "" }
+    el [ width (px (windowRatio window 70)), height (px (windowRatio window 70)), clip ] <|
+        image [ width (px (windowRatio window 110)), centerX, moveUp <| toFloat (windowRatio window 22) ] { src = getSvgIcon icon, description = "" }
 
 
 viewCountsMybData : Window -> MybData -> Element Msg
@@ -148,9 +149,9 @@ viewGenericCount : Window -> Int -> Int -> String -> Element Msg
 viewGenericCount window todayCount totalCount label =
     row
         [ spacing (windowRatio window 10), centerY, width fill ]
-        [ row [ alignLeft, spacing (windowRatio window 10) ]
+        [ row [ alignLeft, spacing (windowRatio window 6) ]
             [ el [ Font.size (windowRatio window 50) ] <| text "+"
-            , el [ Font.size (windowRatio window 76), Font.bold ] <| text (String.fromInt todayCount)
+            , el [ Font.size (windowRatio window 68), Font.bold ] <| text (String.fromInt todayCount)
             ]
         , column
             [ spacing (windowRatio window 3) ]
