@@ -55,7 +55,7 @@ view model =
                         [ width fill
                         , height fill
                         , centerX
-                        , spacing (windowRatio model.window 20)
+                        , spacing (windowRatio model.window 18)
                         ]
                         (viewHeader model
                             :: (if DateUtils.isNightTime model.zone model.now then
@@ -64,7 +64,10 @@ view model =
                                 else
                                     case model.mybData of
                                         Success data ->
-                                            [ viewCountsMybData model.window data
+                                            [ column [ width fill, spacing (windowRatio model.window 34), padding (windowRatio model.window 40) ]
+                                                [ viewCountsMybData model.window data
+                                                , el [ Border.widthEach { left = 0, top = 0, bottom = 2, right = 0 }, Border.solid, centerX, centerY, width fill, alpha 0.4 ] <| none
+                                                ]
                                             , viewOpeningsAndMoneyMybData model.window model.zone model.counter data
                                             , viewMessagesAndTweet model.window model.counter model.messageCursor model.messages model.lastTweet
                                             ]
@@ -127,42 +130,59 @@ viewWeatherIcon window icon =
 
 
 viewCountsMybData : Window -> MybData -> Element Msg
-viewCountsMybData window { todayUsers, totalUsers, todayOrders, totalOrders, todayExhibitors, totalExhibitors, todayClients, totalClients, todayProdOccurrences, totalProdOccurrences, todayOpenOccurrences, totalOpenOccurrences } =
+viewCountsMybData window { todayUsers, yearUsers, totalUsers, todayOrders, yearOrders, totalOrders, todayExhibitors, yearExhibitors, totalExhibitors, todayClients, yearClients, totalClients, todayProdOccurrences, yearProdOccurrences, totalProdOccurrences, todayOpenOccurrences, totalOpenOccurrences } =
     row
         [ width fill, spaceEvenly ]
         [ column
             [ spacing (windowRatio window 22), alignLeft, centerY ]
-            [ viewGenericCount window todayUsers totalUsers "Orga."
-            , viewGenericCount window todayOrders totalOrders "Résa"
-            , viewGenericCount window todayExhibitors totalExhibitors "Exposants"
+            [ viewGenericCount window todayUsers (Just yearUsers) totalUsers "Inscrits agenda"
+            , viewGenericCount window todayClients (Just yearClients) totalClients "Clients"
+            , viewGenericCount window todayProdOccurrences (Just yearProdOccurrences) totalProdOccurrences "Éd. prod"
             ]
-        , el [ Border.widthEach { left = 2, top = 0, bottom = 0, right = 0 }, Border.solid, centerX, centerY, height fill, alpha 0.4 ] <| none
         , column [ spacing (windowRatio window 22), alignLeft, centerY ]
-            [ viewGenericCount window todayClients totalClients "Clients"
-            , viewGenericCount window todayProdOccurrences totalProdOccurrences "Éd. prod"
-            , viewGenericCount window todayOpenOccurrences totalOpenOccurrences "Éd. ouvertes"
+            [ viewGenericCount window todayExhibitors (Just yearExhibitors) totalExhibitors "Exposants"
+            , viewGenericCount window todayOrders (Just yearOrders) totalOrders "Commandes"
+            , viewGenericCount window todayOpenOccurrences Nothing totalOpenOccurrences "Éd. ouvertes"
             ]
         ]
 
 
-viewGenericCount : Window -> Int -> Int -> String -> Element Msg
-viewGenericCount window todayCount totalCount label =
-    row
-        [ spacing (windowRatio window 10), centerY, width fill ]
+viewGenericCount : Window -> Int -> Maybe Int -> Int -> String -> Element Msg
+viewGenericCount window todayCount maybeYearCount totalCount label =
+    column
+        [ spacing (windowRatio window 8), centerY, width fill ]
         [ row [ alignLeft, spacing (windowRatio window 6) ]
             [ el [ Font.size (windowRatio window 50) ] <| text "+"
-            , el [ Font.size (windowRatio window 68), Font.bold ] <| text (String.fromInt todayCount)
+            , el [ Font.size (windowRatio window 62), Font.bold ] <| text (String.fromInt todayCount)
             ]
-        , column
-            [ spacing (windowRatio window 3) ]
-            [ el [ Font.size (windowRatio window 34), Font.bold ] <|
-                (totalCount
-                    |> toFloat
-                    |> FN.format { frenchLocale | decimals = 0 }
-                    |> text
-                )
-            , el [ Font.size (windowRatio window 23) ] <| text label
-            ]
+        , el [ Font.size (windowRatio window 26) ] <| text label
+        , case maybeYearCount of
+            Just yearCount ->
+                row [ spacing (windowRatio window 12) ]
+                    [ el [ Font.size (windowRatio window 36), Font.bold ] <|
+                        (yearCount
+                            |> toFloat
+                            |> FN.format { frenchLocale | decimals = 0 }
+                            |> text
+                        )
+                    , row [ spacing (windowRatio window 12) ]
+                        [ el [ Border.widthEach { left = 2, top = 0, bottom = 0, right = 0 }, Border.solid, centerX, centerY, height fill, Font.size (windowRatio window 26) ] none
+                        , el [ Font.size (windowRatio window 26) ] <|
+                            (totalCount
+                                |> toFloat
+                                |> FN.format { frenchLocale | decimals = 0 }
+                                |> text
+                            )
+                        ]
+                    ]
+
+            Nothing ->
+                el [ Font.size (windowRatio window 36), Font.bold ] <|
+                    (totalCount
+                        |> toFloat
+                        |> FN.format { frenchLocale | decimals = 0 }
+                        |> text
+                    )
         ]
 
 

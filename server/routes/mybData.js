@@ -73,41 +73,48 @@ router.post("/update", async (req, res) => {
 });
 
 async function handleNewUser() {
-    let { id, todayUsers, totalUsers } = await getCurrentMybData();
+    let { id, todayUsers, yearUsers, totalUsers } = await getCurrentMybData();
 
     todayUsers++;
+    yearUsers++;
     totalUsers++;
 
-    await updateTodayMybData({ totalUsers, todayUsers }, id);
+    await updateTodayMybData({ totalUsers, todayUsers, yearUsers }, id);
 }
 
 async function handleNewOrder(params) {
     let {
         id,
         todayOrders,
+        yearOrders,
         totalOrders,
         todayExhibitors,
+        yearExhibitors,
         totalExhibitors,
         todayVA,
+        yearVA,
         totalVA,
         avgCart,
     } = await getCurrentMybData();
 
-    winston.verbose("cur todayOrders", { id, todayOrders, totalOrders });
-
     todayOrders++;
+    yearOrders++;
     totalOrders++;
     todayVA = todayVA + parseFloat(params.amount);
+    yearVA = yearVA + parseFloat(params.amount);
     totalVA = totalVA + parseFloat(params.amount);
     avgCart = Math.round(totalVA / 100 / totalOrders);
 
     await updateTodayMybData(
         {
             todayOrders,
+            yearOrders,
             totalOrders,
             todayExhibitors,
+            yearExhibitors,
             totalExhibitors,
             todayVA,
+            yearVA,
             totalVA,
             avgCart,
         },
@@ -119,8 +126,10 @@ async function handleOrderCancelled(params) {
     let {
         id,
         todayOrders,
+        yearOrders,
         totalOrders,
         todayVA,
+        yearVA,
         totalVA,
         avgCart,
     } = await getCurrentMybData();
@@ -135,18 +144,40 @@ async function handleOrderCancelled(params) {
         todayOrders--;
     }
 
+    if (new Date(orderDate).getFullYear() === getCurrentYear()) {
+        yearVA = yearVA - parseFloat(params.amount);
+        yearOrders--;
+    }
+
     await updateTodayMybData(
-        { totalOrders, todayOrders, todayVA, totalVA, avgCart },
+        {
+            totalOrders,
+            yearOrders,
+            todayOrders,
+            todayVA,
+            yearVA,
+            totalVA,
+            avgCart,
+        },
         id
     );
 }
 
 async function handleNewExhibitor() {
-    let { id, todayExhibitors, totalExhibitors } = await getCurrentMybData();
+    let {
+        id,
+        todayExhibitors,
+        yearExhibitors,
+        totalExhibitors,
+    } = await getCurrentMybData();
     todayExhibitors++;
+    yearExhibitors++;
     totalExhibitors++;
 
-    updateTodayMybData({ totalExhibitors, todayExhibitors }, id);
+    updateTodayMybData(
+        { totalExhibitors, todayExhibitors, yearExhibitors },
+        id
+    );
 }
 
 async function handleNewProdOccurrence(params) {
@@ -154,24 +185,30 @@ async function handleNewProdOccurrence(params) {
     let {
         id,
         todayClients,
+        yearClients,
         totalClients,
         todayProdOccurrences,
+        yearProdOccurrences,
         totalProdOccurrences,
     } = await getCurrentMybData();
 
     todayProdOccurrences++;
+    yearProdOccurrences++;
     totalProdOccurrences++;
 
     if (is_new_client) {
         todayClients++;
+        yearClients++;
         totalClients++;
     }
 
     await updateTodayMybData(
         {
             todayProdOccurrences,
+            yearProdOccurrences,
             totalProdOccurrences,
             todayClients,
+            yearClients,
             totalClients,
         },
         id
@@ -206,7 +243,7 @@ async function handleNewOpenOccurrence() {
 }
 
 async function handleUserDeleted(params) {
-    let { id, todayUsers, totalUsers } = await getCurrentMybData();
+    let { id, todayUsers, yearUsers, totalUsers } = await getCurrentMybData();
 
     totalUsers--;
 
@@ -215,7 +252,11 @@ async function handleUserDeleted(params) {
         todayUsers--;
     }
 
-    await updateTodayMybData({ totalUsers, todayUsers }, id);
+    if (new Date(userRegistrationDate).getFullYear() >= getCurrentYear()) {
+        yearUsers--;
+    }
+
+    await updateTodayMybData({ totalUsers, todayUsers, yearUsers }, id);
 }
 
 // DB
@@ -236,6 +277,10 @@ async function updateTodayMybData(data, id) {
 
 function getTodayMidnight() {
     return new Date().setHours(0, 0, 0, 0);
+}
+
+function getCurrentYear() {
+    return new Date().getFullYear();
 }
 
 module.exports = router;
