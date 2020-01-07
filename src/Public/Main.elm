@@ -3,9 +3,10 @@ module Public.Main exposing (main)
 import Browser
 import DateUtils
 import Editable
+import List.Extra as LE
 import Model exposing (Event(..), Sound)
 import Ports exposing (InfoForElm(..), InfoForOutside(..))
-import Public.Model exposing (Model, Msg(..), Weather, Window, fetchLastTweetCmd, fetchMessagesCmd, fetchMybDataCmd, fetchSoundsCmd, fetchWeatherCmd, initSaint, initTime)
+import Public.Model exposing (Model, Msg(..), Slide(..), Weather, Window, fetchLastTweetCmd, fetchMessagesCmd, fetchMybDataCmd, fetchSoundsCmd, fetchWeatherCmd, initSaint, initTime)
 import Public.View as View
 import RemoteData as RD exposing (RemoteData(..), WebData)
 import Time
@@ -31,9 +32,8 @@ init flags =
       , window = flags.viewport
       , saint = ""
       , messages = NotAsked
-      , messageCursor = 0
-      , counter = 0
       , sounds = NotAsked
+      , currentSlide = MoneySlide
       }
     , initTime
     )
@@ -80,8 +80,7 @@ subscriptions { zone, now } =
                 else
                     [ Time.every (15 * 60 * 1000) <| always FetchWeather
                     , Time.every (15 * 60 * 1000) <| always FetchLastTweet
-                    , Time.every (5 * 1000) <| always AnimateMessagesAndTweet
-                    , Time.every (6 * 1000) <| always IncrementCounter
+                    , Time.every (5 * 1000) <| always ChangeSlide
                     , Ports.getInfoFromOutside InfoFromOutside (always NoOp)
                     ]
                )
@@ -113,30 +112,27 @@ update msg model =
         FetchMessagesResponse response ->
             ( { model | messages = response }, Cmd.none )
 
-        AnimateMessagesAndTweet ->
-            case model.messages of
-                Success messages ->
-                    if messages == [] then
-                        ( model, Cmd.none )
+        ChangeSlide ->
+            let
+                messageSlides =
+                    model.messages
+                        |> RD.map List.length
+                        |> RD.withDefault 0
+                        |> (\count -> List.range 0 (count - 1))
+                        |> List.map MessageSlide
 
-                    else
-                        let
-                            messagesLength =
-                                model.messages
-                                    |> RD.withDefault []
-                                    |> List.length
+                slides =
+                    MoneySlide :: messageSlides ++ [ TweetSlide, OpeningsSlide ]
 
-                            newMessageCursor =
-                                if model.messageCursor == messagesLength then
-                                    0
+                currentIndex =
+                    LE.elemIndex model.currentSlide slides
+                        |> Maybe.withDefault 0
 
-                                else
-                                    model.messageCursor + 1
-                        in
-                        ( { model | messageCursor = newMessageCursor }, Cmd.none )
-
-                _ ->
-                    ( model, Cmd.none )
+                newSlide =
+                    LE.getAt (currentIndex + 1) slides
+                        |> Maybe.withDefault MoneySlide
+            in
+            ( { model | currentSlide = newSlide }, Cmd.none )
 
         InfoFromOutside info ->
             case info of
@@ -200,9 +196,6 @@ update msg model =
 
         FetchLastTweet ->
             ( model, fetchLastTweetCmd )
-
-        IncrementCounter ->
-            ( { model | counter = model.counter + 1 }, Cmd.none )
 
         FetchSoundsResponse response ->
             ( { model | sounds = response }, Cmd.none )

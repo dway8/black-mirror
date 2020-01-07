@@ -10,7 +10,7 @@ import FormatNumber as FN
 import FormatNumber.Locales exposing (frenchLocale)
 import List.Extra as LE
 import Model exposing (Message)
-import Public.Model exposing (Model, Msg, Tweet, Window)
+import Public.Model exposing (Model, Msg, Slide(..), Tweet, Window)
 import Public.MybData exposing (MybData, MybOpening)
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
@@ -68,8 +68,7 @@ view model =
                                                 [ viewCountsMybData model.window data
                                                 , el [ Border.widthEach { left = 0, top = 0, bottom = 2, right = 0 }, Border.solid, centerX, centerY, width fill, alpha 0.4 ] <| none
                                                 ]
-                                            , viewOpeningsAndMoneyMybData model.window model.zone model.counter data
-                                            , viewMessagesAndTweet model.window model.counter model.messageCursor model.messages model.lastTweet
+                                            , viewSlidingData model data
                                             ]
 
                                         _ ->
@@ -186,14 +185,20 @@ viewGenericCount window todayCount maybeYearCount totalCount label =
         ]
 
 
-viewOpeningsAndMoneyMybData : Window -> Zone -> Int -> MybData -> Element Msg
-viewOpeningsAndMoneyMybData window zone counter data =
-    el [ paddingEach { top = windowRatio window 20, bottom = 0, left = 0, right = 0 }, centerX ] <|
-        if modBy 2 counter == 0 && data.openings /= [] then
-            viewOpenings window zone data.openings
+viewSlidingData : Model -> MybData -> Element Msg
+viewSlidingData model mybData =
+    case model.currentSlide of
+        MoneySlide ->
+            viewMoneyMybData model.window mybData
 
-        else
-            viewMoneyMybData window data
+        MessageSlide idx ->
+            viewMessage model.window model.messages idx
+
+        TweetSlide ->
+            viewTweet model.window model.lastTweet
+
+        OpeningsSlide ->
+            viewOpenings model.window model.zone mybData.openings
 
 
 viewOpenings : Window -> Zone -> List MybOpening -> Element Msg
@@ -245,7 +250,7 @@ viewMoneyMybData window data =
             , column
                 [ spacing (windowRatio window 2) ]
                 [ el [ Font.size (windowRatio window 34), Font.bold ] <| text (toEur data.totalVA)
-                , el [ Font.size (windowRatio window 23) ] <| text "Vol. d'affaires"
+                , el [ Font.size (windowRatio window 23) ] <| text "Volume d'affaires"
                 ]
             ]
         , row
@@ -261,18 +266,17 @@ viewMoneyMybData window data =
         ]
 
 
-viewMessagesAndTweet : Window -> Int -> Int -> WebData (List Message) -> WebData Tweet -> Element Msg
-viewMessagesAndTweet window counter messageCursor rdMessages tweet =
-    -- if modBy 2 counter == 1 then
+viewMessage : Window -> WebData (List Message) -> Int -> Element Msg
+viewMessage window rdMessages idx =
     case rdMessages of
         Success messages ->
             let
                 currentMessage =
-                    LE.getAt messageCursor messages
+                    LE.getAt idx messages
             in
             case currentMessage of
                 Nothing ->
-                    viewTweet window tweet
+                    none
 
                 Just message ->
                     el [ paddingEach { top = 0, bottom = windowRatio window 30, left = windowRatio window 30, right = windowRatio window 30 }, width fill, centerY ] <|
@@ -289,7 +293,7 @@ viewMessagesAndTweet window counter messageCursor rdMessages tweet =
                             ]
 
         _ ->
-            viewTweet window tweet
+            none
 
 
 

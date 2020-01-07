@@ -1,4 +1,4 @@
-module Public.Model exposing (ImageSize, Media, Model, Msg(..), Tweet, Weather, Window, fetchLastTweetCmd, fetchMessagesCmd, fetchMybDataCmd, fetchSoundsCmd, fetchWeatherCmd, initSaint, initTime)
+module Public.Model exposing (ImageSize, Media, Model, Msg(..), Slide(..), Tweet, Weather, Window, fetchLastTweetCmd, fetchMessagesCmd, fetchMybDataCmd, fetchSoundsCmd, fetchWeatherCmd, initSaint, initTime)
 
 import Http
 import Json.Decode as D
@@ -21,10 +21,16 @@ type alias Model =
     , saint : String
     , window : Window
     , messages : WebData (List Message)
-    , messageCursor : Int
-    , counter : Int
     , sounds : WebData (List Sound)
+    , currentSlide : Slide
     }
+
+
+type Slide
+    = MoneySlide
+    | MessageSlide Int
+    | TweetSlide
+    | OpeningsSlide
 
 
 type alias Window =
@@ -75,9 +81,8 @@ type Msg
     | FetchLastTweetResponse (WebData Tweet)
     | UpdateSaint
     | FetchMessagesResponse (WebData (List Message))
-    | AnimateMessagesAndTweet
+    | ChangeSlide
     | InfoFromOutside InfoForElm
-    | IncrementCounter
     | FetchSoundsResponse (WebData (List Sound))
 
 
