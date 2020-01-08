@@ -55,7 +55,7 @@ view model =
                         [ width fill
                         , height fill
                         , centerX
-                        , spacing (windowRatio model.window 18)
+                        , spacing (windowRatio model.window 30)
                         ]
                         (viewHeader model
                             :: (if DateUtils.isNightTime model.zone model.now then
@@ -64,7 +64,7 @@ view model =
                                 else
                                     case model.mybData of
                                         Success data ->
-                                            [ column [ width fill, spacing (windowRatio model.window 34), padding (windowRatio model.window 40) ]
+                                            [ column [ width fill, spacing (windowRatio model.window 34), paddingXY (windowRatio model.window 40) 0 ]
                                                 [ viewCountsMybData model.window data
                                                 , el [ Border.widthEach { left = 0, top = 0, bottom = 2, right = 0 }, Border.solid, centerX, centerY, width fill, alpha 0.4 ] <| none
                                                 ]
@@ -133,12 +133,12 @@ viewCountsMybData window { todayUsers, yearUsers, totalUsers, todayOrders, yearO
     row
         [ width fill, spaceEvenly ]
         [ column
-            [ spacing (windowRatio window 22), alignLeft, centerY ]
+            [ spacing (windowRatio window 22), alignLeft ]
             [ viewGenericCount window todayUsers (Just yearUsers) totalUsers "Inscrits agenda"
             , viewGenericCount window todayClients (Just yearClients) totalClients "Clients"
             , viewGenericCount window todayProdOccurrences (Just yearProdOccurrences) totalProdOccurrences "Éd. prod"
             ]
-        , column [ spacing (windowRatio window 22), alignLeft, centerY ]
+        , column [ spacing (windowRatio window 22), alignLeft ]
             [ viewGenericCount window todayExhibitors (Just yearExhibitors) totalExhibitors "Exposants"
             , viewGenericCount window todayOrders (Just yearOrders) totalOrders "Commandes"
             , viewGenericCount window todayOpenOccurrences Nothing totalOpenOccurrences "Éd. ouvertes"
@@ -151,8 +151,8 @@ viewGenericCount window todayCount maybeYearCount totalCount label =
     column
         [ spacing (windowRatio window 8), centerY, width fill ]
         [ row [ alignLeft, spacing (windowRatio window 6) ]
-            [ el [ Font.size (windowRatio window 50) ] <| text "+"
-            , el [ Font.size (windowRatio window 62), Font.bold ] <| text (String.fromInt todayCount)
+            [ el [ Font.size (windowRatio window 37) ] <| text "+"
+            , el [ Font.size (windowRatio window 56), Font.bold ] <| text (String.fromInt todayCount)
             ]
         , el [ Font.size (windowRatio window 26) ] <| text label
         , case maybeYearCount of
@@ -203,8 +203,11 @@ viewSlidingData model mybData =
 
 viewOpenings : Window -> Zone -> List MybOpening -> Element Msg
 viewOpenings window zone openings =
-    column [ spacing (windowRatio window 20), width fill ]
-        [ el [ Font.bold, Font.size (windowRatio window 30) ] <| text "Ouvertures J+7"
+    column [ spacing (windowRatio window 20), width fill, paddingXY (windowRatio window 40) 0 ]
+        [ row [ spacing (windowRatio window 16) ]
+            [ el [ Font.size (windowRatio window 46), moveUp <| toFloat (windowRatio window 3) ] <| Utils.icon "calendar-alt"
+            , el [ Font.bold, Font.size (windowRatio window 30) ] <| text "Ouvertures J+7"
+            ]
         , column [ Font.size (windowRatio window 19), spacing (windowRatio window 13), width fill ]
             (openings
                 |> List.sortBy (.openingDate >> Time.posixToMillis)
@@ -222,7 +225,7 @@ viewOpenings window zone openings =
 cropNameIfLongerThan : Int -> String -> String
 cropNameIfLongerThan max name =
     if String.length name > max then
-        String.left max name ++ "..."
+        String.left (max - 3) name ++ "..."
 
     else
         name
@@ -236,32 +239,35 @@ viewMoneyMybData window data =
                 |> toFloat
                 |> (\i -> i / 100)
                 |> FN.format { frenchLocale | decimals = 0 }
-                |> (\i -> i ++ "€")
+                |> (\i -> i ++ "\u{00A0}€")
     in
-    column [ spacing (windowRatio window 14), centerX ]
-        [ row
-            [ spacing (windowRatio window 22)
-            , centerX
-            ]
-            [ row [ alignLeft, spacing (windowRatio window 10) ]
-                [ el [ Font.size (windowRatio window 50) ] <| text "+"
-                , el [ Font.size (windowRatio window 68), Font.bold ] <| text (toEur data.todayVA)
+    row [ spacing (windowRatio window 10), paddingXY (windowRatio window 40) 0 ]
+        [ el [ Font.size (windowRatio window 40), alignTop, moveDown (windowRatio window 12 |> toFloat) ] <| text "+"
+        , column [ spacing (windowRatio window 16) ]
+            [ column [ spacing (windowRatio window 12) ]
+                [ el [ Font.size (windowRatio window 64), Font.bold, alignBottom ] <| text (toEur data.todayVA)
+                , column [ spacing (windowRatio window 10) ]
+                    [ el [ Font.size (windowRatio window 23) ] <| text "Volume d'affaires"
+                    , row
+                        [ spacing (windowRatio window 12) ]
+                        [ el [ Font.size (windowRatio window 34), Font.bold ] <| text (toEur data.yearVA)
+                        , row [ spacing (windowRatio window 12), height fill ]
+                            [ el [ Border.widthEach { left = 2, top = 0, bottom = 0, right = 0 }, Border.solid, centerX, centerY, height fill, Font.size (windowRatio window 26) ] none
+                            , el [ Font.size (windowRatio window 24), alignBottom, moveUp (windowRatio window 3 |> toFloat) ] <| text (toEur data.totalVA)
+                            ]
+                        ]
+                    ]
                 ]
-            , column
-                [ spacing (windowRatio window 2) ]
-                [ el [ Font.size (windowRatio window 34), Font.bold ] <| text (toEur data.totalVA)
-                , el [ Font.size (windowRatio window 23) ] <| text "Volume d'affaires"
+            , row
+                [ spacing (windowRatio window 18) ]
+                [ el [ Font.size (windowRatio window 48), moveUp <| toFloat (windowRatio window 3) ] <| Utils.icon "shopping-basket"
+                , el [ Font.size (windowRatio window 46) ] <|
+                    (data.avgCart
+                        |> String.fromInt
+                        |> (\a -> a ++ "\u{00A0}€")
+                        |> text
+                    )
                 ]
-            ]
-        , row
-            [ spacing (windowRatio window 18), centerX ]
-            [ el [ Font.size (windowRatio window 48), moveUp <| toFloat (windowRatio window 3) ] <| Utils.icon "shopping-basket"
-            , el [ Font.size (windowRatio window 46) ] <|
-                (data.avgCart
-                    |> String.fromInt
-                    |> (\a -> a ++ "\u{00A0}€")
-                    |> text
-                )
             ]
         ]
 
@@ -279,26 +285,21 @@ viewMessage window rdMessages idx =
                     none
 
                 Just message ->
-                    el [ paddingEach { top = 0, bottom = windowRatio window 30, left = windowRatio window 30, right = windowRatio window 30 }, width fill, centerY ] <|
+                    el [ paddingEach { top = 0, bottom = windowRatio window 30, left = windowRatio window 30, right = windowRatio window 30 }, width fill ] <|
                         column
                             [ Background.color whiteColor
                             , Font.color blackColor
                             , width fill
                             , Border.rounded (windowRatio window 14)
                             , paddingEach { top = windowRatio window 18, bottom = windowRatio window 26, left = windowRatio window 18, right = windowRatio window 18 }
-                            , spacing (windowRatio window 14)
+                            , spacing (windowRatio window 10)
                             ]
                             [ paragraph [ Font.size (windowRatio window 28), Font.bold ] [ text message.title ]
-                            , paragraph [ Font.size (windowRatio window 24) ] [ text message.content ]
+                            , paragraph [ Font.size (windowRatio window 22) ] [ text message.content ]
                             ]
 
         _ ->
             none
-
-
-
--- else
---     none
 
 
 viewTweet : Window -> WebData Tweet -> Element Msg

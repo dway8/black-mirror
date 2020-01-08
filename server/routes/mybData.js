@@ -53,6 +53,7 @@ router
                 await handleUserDeleted(params);
                 break;
             default:
+                winston.error("Unknown event", { event });
                 break;
         }
 
