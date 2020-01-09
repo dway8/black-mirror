@@ -131,7 +131,7 @@ viewWeatherIcon window icon =
 viewCountsMybData : Window -> MybData -> Element Msg
 viewCountsMybData window { todayUsers, yearUsers, totalUsers, todayOrders, yearOrders, totalOrders, todayExhibitors, yearExhibitors, totalExhibitors, todayClients, yearClients, totalClients, todayProdOccurrences, yearProdOccurrences, totalProdOccurrences, todayOpenOccurrences, totalOpenOccurrences } =
     row
-        [ width fill, spaceEvenly ]
+        [ width fill, spaceEvenly, paddingXY (windowRatio window 20) 0 ]
         [ column
             [ spacing (windowRatio window 22), alignLeft ]
             [ viewGenericCount window todayUsers (Just yearUsers) totalUsers "Inscrits agenda"
@@ -150,15 +150,18 @@ viewGenericCount : Window -> Int -> Maybe Int -> Int -> String -> Element Msg
 viewGenericCount window todayCount maybeYearCount totalCount label =
     column
         [ spacing (windowRatio window 8), centerY, width fill ]
-        [ row [ alignLeft, spacing (windowRatio window 6) ]
-            [ el [ Font.size (windowRatio window 37) ] <| text "+"
-            , el [ Font.size (windowRatio window 56), Font.bold ] <| text (String.fromInt todayCount)
+        [ column
+            [ width fill ]
+            [ row [ alignLeft, spacing (windowRatio window 6) ]
+                [ el [ Font.size (windowRatio window 37) ] <| text "+"
+                , el [ Font.size (windowRatio window 40), Font.bold ] <| text (String.fromInt todayCount)
+                ]
+            , el [ Font.size (windowRatio window 22) ] <| text label
             ]
-        , el [ Font.size (windowRatio window 26) ] <| text label
         , case maybeYearCount of
             Just yearCount ->
                 row [ spacing (windowRatio window 12) ]
-                    [ el [ Font.size (windowRatio window 36), Font.bold ] <|
+                    [ el [ Font.size (windowRatio window 30), Font.bold ] <|
                         (yearCount
                             |> toFloat
                             |> FN.format { frenchLocale | decimals = 0 }
@@ -166,7 +169,7 @@ viewGenericCount window todayCount maybeYearCount totalCount label =
                         )
                     , row [ spacing (windowRatio window 12) ]
                         [ el [ Border.widthEach { left = 2, top = 0, bottom = 0, right = 0 }, Border.solid, centerX, centerY, height fill, Font.size (windowRatio window 26) ] none
-                        , el [ Font.size (windowRatio window 26) ] <|
+                        , el [ Font.size (windowRatio window 18) ] <|
                             (totalCount
                                 |> toFloat
                                 |> FN.format { frenchLocale | decimals = 0 }
@@ -241,7 +244,7 @@ viewMoneyMybData window data =
                 |> FN.format { frenchLocale | decimals = 0 }
                 |> (\i -> i ++ "\u{00A0}€")
     in
-    row [ spacing (windowRatio window 10), paddingXY (windowRatio window 40) 0 ]
+    row [ spacing (windowRatio window 10), paddingXY (windowRatio window 60) 0 ]
         [ el [ Font.size (windowRatio window 40), alignTop, moveDown (windowRatio window 12 |> toFloat) ] <| text "+"
         , column [ spacing (windowRatio window 16) ]
             [ column [ spacing (windowRatio window 12) ]

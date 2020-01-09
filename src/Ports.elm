@@ -21,6 +21,7 @@ type InfoForElm
     = ReceivedMYBEvent MybData Event
     | ReceivedMessages (List Message) Bool
     | ReceivedSounds (List Sound)
+    | ReceivedMYBRefresh MybData
 
 
 port infoForOutside : GenericOutsideData -> Cmd msg
@@ -61,6 +62,14 @@ getInfoFromOutside tagger onError =
                     case D.decodeValue Model.soundsDecoder outsideInfo.data of
                         Ok sounds ->
                             tagger <| ReceivedSounds sounds
+
+                        Err _ ->
+                            onError "Error when parsing SSE message"
+
+                "receivedMYBRefresh" ->
+                    case D.decodeValue MybData.mybDataDecoder outsideInfo.data of
+                        Ok mybData ->
+                            tagger <| ReceivedMYBRefresh mybData
 
                         Err _ ->
                             onError "Error when parsing SSE message"

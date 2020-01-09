@@ -35,6 +35,14 @@ function createEventSource(es, app, url) {
             common.playAudio(url);
         });
 
+        es.addEventListener("MYB-refresh", function(event) {
+            var res = {
+                tag: "receivedMYBRefresh",
+                data: JSON.parse(event.data),
+            };
+            app.ports.infoForElm.send(res);
+        });
+
         es.addEventListener(
             "error",
             function(e) {

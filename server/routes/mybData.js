@@ -71,6 +71,11 @@ router.post("/update", async (req, res) => {
     let { id } = await getCurrentMybData();
     await updateTodayMybData(params, id);
     winston.verbose("OK! Updated.");
+
+    let currentMybData = await getCurrentMybData();
+    currentMybData.openings = await getMybOpenings();
+
+    sse.send({ currentMybData }, "MYB-refresh");
 });
 
 async function handleNewUser() {

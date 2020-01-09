@@ -80,7 +80,7 @@ subscriptions { zone, now } =
                 else
                     [ Time.every (15 * 60 * 1000) <| always FetchWeather
                     , Time.every (15 * 60 * 1000) <| always FetchLastTweet
-                    , Time.every (5 * 1000) <| always ChangeSlide
+                    , Time.every (10 * 1000) <| always ChangeSlide
                     , Ports.getInfoFromOutside InfoFromOutside (always NoOp)
                     ]
                )
@@ -162,6 +162,11 @@ update msg model =
 
                 ReceivedSounds sounds ->
                     ( { model | sounds = Success sounds }, Cmd.none )
+
+                ReceivedMYBRefresh mybData ->
+                    ( { model | mybData = Success mybData }
+                    , Cmd.none
+                    )
 
         InitTime ( now, zone ) ->
             let
