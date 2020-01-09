@@ -75,7 +75,7 @@ router.post("/update", async (req, res) => {
     let currentMybData = await getCurrentMybData();
     currentMybData.openings = await getMybOpenings();
 
-    sse.send({ currentMybData }, "MYB-refresh");
+    sse.send(currentMybData, "MYB-refresh");
 });
 
 async function handleNewUser() {
