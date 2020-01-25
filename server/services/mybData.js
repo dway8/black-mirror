@@ -88,7 +88,7 @@ function mybDataToDbKeys(data) {
 async function getMybOpenings() {
     try {
         const { rows } = await db.query(
-            "SELECT name, ROUND((EXTRACT(epoch FROM opening_date)* 1000)) as opening_date FROM myb_openings WHERE opening_date <= (now() + '7 day'::interval)"
+            "SELECT name, ROUND((EXTRACT(epoch FROM opening_date)* 1000)) as opening_date FROM myb_openings WHERE opening_date <= (now() + '7 day'::interval) AND opening_date >= now()"
         );
         const openings = rows.map(row => {
             return dbToMybDataKeys(row);
