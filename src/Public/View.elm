@@ -153,8 +153,8 @@ viewGenericCount window todayCount maybeYearCount totalCount label =
         [ column
             [ width fill ]
             [ row [ alignLeft, spacing (windowRatio window 6) ]
-                [ el [ Font.size (windowRatio window 37) ] <| text "+"
-                , el [ Font.size (windowRatio window 40), Font.bold ] <| text (String.fromInt todayCount)
+                [ el [ Font.size (windowRatio window 38) ] <| text "+"
+                , el [ Font.size (windowRatio window 45), Font.bold ] <| text (String.fromInt todayCount)
                 ]
             , el [ Font.size (windowRatio window 22) ] <| text label
             ]
