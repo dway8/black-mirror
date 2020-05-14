@@ -1,9 +1,19 @@
 const Router = require("express-promise-router");
 const SSE = require("express-sse");
-const sse = new SSE(["Connected!"]);
+let sse = new SSE(["Connected!"]);
 
 const router = new Router();
 
-router.get("/", sse.init);
+router.get("/", (req, res) => {
+    console.log("Init sse");
+
+    req.on("close", () => {
+        console.log("Connection closed");
+        res.end();
+        // res.emit("close");
+    });
+
+    return sse.init(req, res);
+});
 
 module.exports = { router, sse };

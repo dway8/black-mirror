@@ -4,6 +4,7 @@ var cors = require("cors");
 const path = require("path");
 const mountRoutes = require("./routes");
 const requireAuth = require("./middlewares/auth.js");
+const { sse } = require("./routes/sse.js");
 
 // Constants
 const PORT = 42425;
@@ -48,6 +49,11 @@ if (!isDevelopment) {
         res.sendFile(path.join(__dirname, "/../dist/public.html"))
     );
 }
+const keepAlive = () => {
+    sse.send("Ping");
+    setTimeout(keepAlive, 1000);
+};
+keepAlive();
 
 const port = process.env.PORT || PORT;
 app.listen(port, function() {

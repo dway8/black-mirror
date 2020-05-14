@@ -1,6 +1,6 @@
 "use strict";
 var { Elm } = require("../src/Public/Main.elm");
-var createEventSource = require("../libraries/sse");
+var { createEventSource, restartSse } = require("../libraries/sse");
 var common = require("../libraries/common");
 
 var node = document.getElementById("content");
@@ -29,4 +29,12 @@ app.ports.infoForOutside.subscribe(function(elmData) {
 });
 
 var es;
-createEventSource(es, app, "/api/sse");
+var sseUrl = "/api/sse";
+es = createEventSource(es, app, sseUrl);
+
+const oneMinute = 3000;
+const keepAlive = () => {
+    restartSse(es, app, sseUrl);
+    setTimeout(keepAlive, oneMinute);
+};
+keepAlive();

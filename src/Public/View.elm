@@ -154,7 +154,7 @@ viewGenericCount window todayCount maybeYearCount totalCount label =
             [ width fill ]
             [ row [ alignLeft, spacing (windowRatio window 6) ]
                 [ el [ Font.size (windowRatio window 38) ] <| text "+"
-                , el [ Font.size (windowRatio window 45), Font.bold ] <| text (String.fromInt todayCount)
+                , el [ Font.size (windowRatio window 48), Font.bold ] <| text (String.fromInt todayCount)
                 ]
             , el [ Font.size (windowRatio window 22) ] <| text label
             ]
@@ -248,7 +248,7 @@ viewMoneyMybData window data =
         [ el [ Font.size (windowRatio window 40), alignTop, moveDown (windowRatio window 12 |> toFloat) ] <| text "+"
         , column [ spacing (windowRatio window 16) ]
             [ column [ spacing (windowRatio window 12) ]
-                [ el [ Font.size (windowRatio window 64), Font.bold, alignBottom ] <| text (toEur data.todayVA)
+                [ el [ Font.size (windowRatio window 66), Font.bold, alignBottom ] <| text (toEur data.todayVA)
                 , column [ spacing (windowRatio window 10) ]
                     [ el [ Font.size (windowRatio window 23) ] <| text "Volume d'affaires"
                     , row

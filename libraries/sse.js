@@ -2,6 +2,14 @@ var common = require("../libraries/common");
 
 var backoff = 0;
 
+function restartSse(es, app, url) {
+    console.log("Killing and restarting");
+    es.close();
+    es = null;
+
+    createEventSource(es, app, url);
+}
+
 function createEventSource(es, app, url) {
     if (window.EventSource) {
         es = new EventSource(url);
@@ -69,7 +77,8 @@ function createEventSource(es, app, url) {
             },
             false
         );
+        return es;
     }
 }
 
-module.exports = createEventSource;
+module.exports = { createEventSource, restartSse };
