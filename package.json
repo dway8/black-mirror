@@ -16,7 +16,7 @@
     "server:serveProd": "cd server && yarn install && yarn serveProd"
   },
   "devDependencies": {
-    "elm": "^0.19.0-bugfix6",
+    "elm": "^0.19.1",
     "elm-format": "^0.8.0",
     "elm-hot-webpack-loader": "^1.0.0",
     "eslint": "^5.14.1",
