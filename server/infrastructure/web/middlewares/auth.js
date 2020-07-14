@@ -22,4 +22,4 @@ function checkCredentials(name, pass) {
     return name === "adminSpottt" && pass === secret;
 }
 
-module.exports = requireAuth;
+module.exports = { requireAuth };

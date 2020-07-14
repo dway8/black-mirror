@@ -2,8 +2,9 @@
 var express = require("express");
 var cors = require("cors");
 const path = require("path");
-const mountRoutes = require("./routes");
-const requireAuth = require("./middlewares/auth.js");
+const mountRoutes = require("./infrastructure/web/routes");
+const requireAuth = require("./infrastructure/web/middlewares/auth.js");
+const ErrorHandler = require("./frameworks/common/ErrorHandler");
 
 // Constants
 const PORT = 42425;
@@ -31,20 +32,24 @@ app.use(bodyParser.urlencoded({ extended: false, limit: "50mb" }));
 app.use(bodyParser.json({ limit: "50mb" }));
 app.use(bodyParser.raw({ type: "text/plain" }));
 
+// load routes
 mountRoutes(app);
+
+// generic error handler
+app.use(ErrorHandler);
 
 // Serving compiled elm client
 if (!isDevelopment) {
-    app.get("/admin", requireAuth, (req, res) =>
+    app.get("/admin", requireAuth, (_req, res) =>
         res.sendFile(path.join(__dirname, "/../dist/admin.html"))
     );
 
-    app.get("/admin.html", requireAuth, (req, res) =>
+    app.get("/admin.html", requireAuth, (_req, res) =>
         res.sendFile(path.join(__dirname, "/../dist/admin.html"))
     );
     app.use(express.static(path.join(__dirname, "/../dist")));
 
-    app.get("/", (req, res) =>
+    app.get("/", (_req, res) =>
         res.sendFile(path.join(__dirname, "/../dist/public.html"))
     );
 }
