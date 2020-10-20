@@ -91,6 +91,7 @@
 
 const express = require("express");
 const MessagesController = require("../../../controllers/MessagesController");
+
 const messagesRouter = dependencies => {
     const router = express.Router();
     const { AuthMiddleware } = dependencies;

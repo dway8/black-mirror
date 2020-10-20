@@ -1,6 +1,8 @@
 module.exports = class DatabaseService {
     constructor() {
         this.messageRepository = null;
+        this.mybDataRepository = null;
+        this.mybOpeningRepository = null;
     }
 
     initDatabase() {

@@ -62,7 +62,7 @@ module.exports = dependencies => {
     const archiveMessage = (req, res, next) => {
         const ArchiveMessageCommand = ArchiveMessage(messageRepository);
 
-        ArchiveMessageCommand.Execute(req.params.id, req.body).then(
+        ArchiveMessageCommand.Execute(req.params.id).then(
             response => {
                 res.json({ success: true, data: response });
             },
@@ -75,7 +75,7 @@ module.exports = dependencies => {
     const deleteMessage = (req, res, next) => {
         const DeleteMessageCommand = DeleteMessage(messageRepository);
 
-        DeleteMessageCommand.Execute(req.params.id, req.body).then(
+        DeleteMessageCommand.Execute(req.params.id).then(
             response => {
                 res.json({ success: true, data: response });
             },

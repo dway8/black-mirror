@@ -18,4 +18,8 @@ module.exports = class MessageRepository {
     getAll() {
         return Promise.reject(new Error("not implemented"));
     }
+
+    archive(_message) {
+        return Promise.reject(new Error("not implemented"));
+    }
 };
