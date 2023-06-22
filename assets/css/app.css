@@ -1,0 +1,12 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+/* This file is for your main application CSS */
+
+.myb-blue-color {
+    color:  #00bede;
+}
+.myb-red-color {
+    color:  #e62530;
+}

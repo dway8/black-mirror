@@ -1,12 +1,18 @@
-# black-mirror
+# BlackMirror
 
-Elm + Express app displayed on the company hand-made mirror.
+To start your Phoenix server:
 
-Business information in real-time + Spottt tweet + forecast etc.
+  * Run `mix setup` to install and setup dependencies
+  * Start Phoenix endpoint with `mix phx.server` or inside IEx with `iex -S mix phx.server`
 
-**Server code**: `yarn serve`
+Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 
-**Elm code**: `yarn dev all` -> visit http://localhost:42424/public.html or http://localhost:42424/admin.html
+Ready to run in production? Please [check our deployment guides](https://hexdocs.pm/phoenix/deployment.html).
 
+## Learn more
 
-Deployed on https://black-mirror.herokuapp.com
+  * Official website: https://www.phoenixframework.org/
+  * Guides: https://hexdocs.pm/phoenix/overview.html
+  * Docs: https://hexdocs.pm/phoenix
+  * Forum: https://elixirforum.com/c/phoenix-forum
+  * Source: https://github.com/phoenixframework/phoenix
