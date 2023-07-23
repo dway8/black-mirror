@@ -22,9 +22,24 @@ defmodule BlackMirrorWeb.MyBrocanteAPIController do
     end
   end
 
-  def refresh(conn, _params) do
+  def refresh(conn, params) do
     IO.puts("refresh")
-    send_resp(conn, :ok, "")
+
+    events_list = Map.get(params, "events")
+
+    case MyBrocanteEvent.refresh_year_events(events_list) do
+      {:ok, _} ->
+        send_resp(conn, :ok, "")
+
+      {:error, _} ->
+        IO.puts(
+          "[MyBrocante API] No events were created when refreshing year events. Params received were:"
+        )
+
+        IO.inspect(params)
+
+        send_resp(conn, :bad_request, "")
+    end
   end
 
   def changeset_error_to_string(changeset) do

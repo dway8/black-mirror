@@ -2,6 +2,7 @@ defmodule BlackMirror.MyBrocanteEvent do
   require Logger
   use Ecto.Schema
   import Ecto.Changeset
+  import Ecto.Query
   alias BlackMirror.Repo
   alias __MODULE__
 
@@ -28,24 +29,49 @@ defmodule BlackMirror.MyBrocanteEvent do
     |> validate_required([:customer_id, :amount, :date])
   end
 
-  def cast_date(%Ecto.Changeset{} = changeset, attrs) do
+  def refresh_year_events(params) do
+    IO.puts("water refreshing")
+    now = DateTime.utc_now()
+    current_year = now.year
+
+    # delete year events
+    from(e in MyBrocanteEvent,
+      where: fragment("date_part('year', ?)", e.date) == ^current_year
+    )
+    |> Repo.delete_all()
+
+    IO.puts("DELETED")
+    IO.inspect(params)
+
+    # insert all
+    changesets =
+      params
+      |> Enum.map(fn event ->
+        %MyBrocanteEvent{}
+        |> MyBrocanteEvent.changeset(event)
+      end)
+
+    IO.puts("changesets")
+    IO.inspect(changesets)
+
+    Repo.transaction(fn ->
+      params
+      |> Enum.each(&create_event(&1))
+    end)
+  end
+
+  defp cast_date(%Ecto.Changeset{} = changeset, attrs) do
     case Map.get(attrs, "date") do
       nil ->
         add_error(changeset, :date, "can't be nil")
 
-      date_str ->
-        case Integer.parse(date_str) do
-          {timestamp, _} ->
-            case DateTime.from_unix(timestamp, :millisecond) do
-              {:ok, datetime} ->
-                change(changeset, %{date: datetime |> DateTime.truncate(:second)})
+      timestamp ->
+        case DateTime.from_unix(timestamp, :millisecond) do
+          {:ok, datetime} ->
+            change(changeset, %{date: datetime |> DateTime.truncate(:second)})
 
-              {:error, err} ->
-                add_error(changeset, :date, "could not convert timestamp to datetime: #{err}")
-            end
-
-          _ ->
-            add_error(changeset, :date, "could not convert timestamp to integer")
+          {:error, err} ->
+            add_error(changeset, :date, "could not convert timestamp to datetime: #{err}")
         end
     end
   end

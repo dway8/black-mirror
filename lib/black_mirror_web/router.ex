@@ -23,8 +23,8 @@ defmodule BlackMirrorWeb.Router do
   scope "/api/mybrocante", BlackMirrorWeb do
     pipe_through :api
 
-    # post "/refresh", MyBrocanteAPIController, :refresh
     post "/new", MyBrocanteAPIController, :new
+    post "/refresh", MyBrocanteAPIController, :refresh
   end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development

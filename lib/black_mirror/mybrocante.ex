@@ -4,7 +4,6 @@ defmodule BlackMirror.MyBrocante do
   alias BlackMirror.MyBrocante
   alias BlackMirror.MyBrocanteEvent
   alias BlackMirror.MyBrocanteSalesTarget
-  alias BlackMirror.Repo
 
   defstruct [
     :current_month_new_users,
