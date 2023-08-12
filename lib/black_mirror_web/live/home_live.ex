@@ -64,31 +64,28 @@ defmodule BlackMirrorWeb.HomeLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="space-y-8">
-
-      <div class="columns-2">
-        <div>
-          <div class="text-5xl font-bold"><%= String.capitalize(@current_day) %></div>
-          <div class="text-3xl mt-2"><%= @current_date %></div>
+    <div class="bg-black antialiased text-white px-4 py-20 h-screen">
+      <div class="space-y-8 mx-auto max-w-3xl">
+        <div class="columns-2">
+          <div>
+            <div class="text-5xl font-bold"><%= String.capitalize(@current_day) %></div>
+            <div class="text-3xl mt-2"><%= @current_date %></div>
+          </div>
+          <div class="text-right">
+            <div class="text-8xl"><%= @current_time %></div>
+            <.live_component module={WeatherComponent} id="weather" , weather={@weather} />
+          </div>
         </div>
-        <div class="text-right">
-          <div class="text-8xl"><%= @current_time %></div>
-          <.live_component module={WeatherComponent} id="weather", weather= {@weather} />
+
+        <div class="grid grid-cols-7 text-gray-500 font-bold text-3xl">
+          <div class="col-span-4">MOIS EN COURS</div>
+          <div class="col-span-1 w-0.5 self-stretch bg-white bg-opacity-70"></div>
+          <div class="col-span-2">ANNUEL</div>
         </div>
+
+        <.live_component module={MyBrocanteComponent} id="mybrocante" , mybrocante={@mybrocante} />
       </div>
-
-      <div class="grid grid-cols-7 text-gray-500 font-bold text-3xl">
-        <div class="col-span-4">MOIS EN COURS</div>
-        <div class="col-span-1 w-0.5 self-stretch bg-white bg-opacity-70"></div>
-        <div class="col-span-2">ANNUEL</div>
-      </div>
-
-      <.live_component module={MyBrocanteComponent} id="mybrocante", mybrocante= {@mybrocante} />
-
-
-
     </div>
-
     """
   end
 end

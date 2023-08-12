@@ -30,7 +30,6 @@ defmodule BlackMirror.MyBrocanteEvent do
   end
 
   def refresh_year_events(params) do
-    IO.puts("water refreshing")
     now = DateTime.utc_now()
     current_year = now.year
 
@@ -40,20 +39,9 @@ defmodule BlackMirror.MyBrocanteEvent do
     )
     |> Repo.delete_all()
 
-    IO.puts("DELETED")
     IO.inspect(params)
 
     # insert all
-    changesets =
-      params
-      |> Enum.map(fn event ->
-        %MyBrocanteEvent{}
-        |> MyBrocanteEvent.changeset(event)
-      end)
-
-    IO.puts("changesets")
-    IO.inspect(changesets)
-
     Repo.transaction(fn ->
       params
       |> Enum.each(&create_event(&1))

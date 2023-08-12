@@ -18,6 +18,7 @@ defmodule BlackMirrorWeb.Router do
     pipe_through(:browser)
 
     live("/", HomeLive)
+    live("/admin", AdminLive)
   end
 
   scope "/api/mybrocante", BlackMirrorWeb do
