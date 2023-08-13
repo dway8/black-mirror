@@ -2,11 +2,16 @@ defmodule BlackMirrorWeb.HomeLive do
   use BlackMirrorWeb, :live_view
   require WeatherComponent
   require Logger
+  alias BlackMirror.Repo
 
   @clock_update_interval 1000
   # refresh weather every hour
   @weather_update_interval 1000 * 3600
+  # refresh display (data/messages) every 3 seconds
+  @display_update_interval 1000 * 3
   @timezone "Europe/Paris"
+
+  @type display :: :data | :message
 
   def mount(_params, _session, socket) do
     start_tick()
@@ -16,6 +21,9 @@ defmodule BlackMirrorWeb.HomeLive do
       |> update_date_and_time()
       |> update_weather()
       |> init_mybrocante()
+      |> init_messages()
+      |> assign(current_display: :data)
+      |> assign(current_message_idx: 0)
 
     {:ok, socket}
   end
@@ -30,6 +38,23 @@ defmodule BlackMirrorWeb.HomeLive do
   def handle_info(:update_weather, socket) do
     schedule_weather_update()
     {:noreply, update_weather(socket)}
+  end
+
+  @impl true
+  def handle_info(:update_display, socket) do
+    schedule_display_update()
+
+    case socket.assigns.current_display do
+      :data ->
+        {:noreply, assign(socket, current_display: :message, current_message_idx: 0)}
+
+      :message ->
+        if socket.assigns.current_message_idx == length(socket.assigns.messages) - 1 do
+          {:noreply, assign(socket, current_display: :data)}
+        else
+          {:noreply, assign(socket, current_message_idx: socket.assigns.current_message_idx + 1)}
+        end
+    end
   end
 
   defp update_date_and_time(socket) do
@@ -53,6 +78,20 @@ defmodule BlackMirrorWeb.HomeLive do
     assign(socket, mybrocante: mybrocante)
   end
 
+  defp init_messages(socket) do
+    messages = Repo.all(BlackMirror.Message)
+
+    if length(messages) > 0 do
+      schedule_display_update()
+    end
+
+    assign(socket, messages: messages)
+  end
+
+  defp schedule_display_update do
+    Process.send_after(self(), :update_display, @display_update_interval)
+  end
+
   def start_tick do
     Process.send_after(self(), :tick, @clock_update_interval)
   end
@@ -65,7 +104,7 @@ defmodule BlackMirrorWeb.HomeLive do
   def render(assigns) do
     ~H"""
     <div class="bg-black antialiased text-white px-4 py-20 h-screen">
-      <div class="space-y-8 mx-auto max-w-3xl">
+      <div class="space-y-8 mx-auto max-w-3xl h-full flex flex-col">
         <div class="columns-2">
           <div>
             <div class="text-5xl font-bold"><%= String.capitalize(@current_day) %></div>
@@ -77,13 +116,26 @@ defmodule BlackMirrorWeb.HomeLive do
           </div>
         </div>
 
-        <div class="grid grid-cols-7 text-gray-500 font-bold text-3xl">
-          <div class="col-span-4">MOIS EN COURS</div>
-          <div class="col-span-1 w-0.5 self-stretch bg-white bg-opacity-70"></div>
-          <div class="col-span-2">ANNUEL</div>
-        </div>
+        <%= case @current_display do %>
 
-        <.live_component module={MyBrocanteComponent} id="mybrocante" , mybrocante={@mybrocante} />
+          <% :data -> %>
+
+            <div class="grid grid-cols-7 text-gray-500 font-bold text-3xl">
+              <div class="col-span-4">MOIS EN COURS</div>
+              <div class="col-span-1 w-0.5 self-stretch bg-white bg-opacity-70"></div>
+              <div class="col-span-2">ANNUEL</div>
+            </div>
+
+            <.live_component module={MyBrocanteComponent} id="mybrocante" , mybrocante={@mybrocante} />
+
+          <% :message -> %>
+            <% message = Enum.at(@messages, @current_message_idx) %>
+              <div class="flex items-center justify-center w-full flex-grow">
+                <div class="text-3xl pb-8 text-center"><%= message.content %></div>
+              </div>
+
+        <%= end %>
+
       </div>
     </div>
     """
