@@ -46,27 +46,22 @@ defmodule BlackMirrorWeb.AdminLive do
     </div>
 
         <.modal id="message_modal" show={@show_message_modal}>
-          <.simple_form for={@new_message_form} phx-submit="save_new_message">
-            <.input
-              type="textarea"
-              id="message-input"
-              field={@new_message_form[:content]}
-              label="Nouveau message"
-            />
-            <actions>
-              <div class="relative">
-                <div class="absolute right-0">
-                  <.button
-                    phx-click={hide_modal("message_modal")}
-                    class="bg-gray-400 hover:bg-gray-500"
-                  >
-                    Annuler
-                  </.button>
-                  <.button class="bg-blue-600 hover:bg-blue-700" type="submit">Confirmer</.button>
-                </div>
+          <div class="space-y-4">
+            <.simple_form for={@new_message_form} phx-submit="save_new_message">
+              <.input
+                type="textarea"
+                id="message-input"
+                field={@new_message_form[:content]}
+                label="Nouveau message"
+              />
+            </.simple_form>
+            <div class="relative">
+              <div class="absolute right-0">
+                <.button phx-click={hide_modal("message_modal")} class="bg-gray-400 hover:bg-gray-500" >Annuler</.button>
+                <.button class="bg-blue-600 hover:bg-blue-700" type="submit">Confirmer</.button>
               </div>
-            </actions>
-          </.simple_form>
+            </div>
+          </div>
         </.modal>
     </div>
     """
