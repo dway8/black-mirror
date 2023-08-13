@@ -131,7 +131,7 @@ defmodule BlackMirrorWeb.HomeLive do
           <% :message -> %>
             <% message = Enum.at(@messages, @current_message_idx) %>
               <div class="flex items-center justify-center w-full flex-grow">
-                <div class="text-3xl pb-8 text-center"><%= message.content %></div>
+                <div class={(if String.length(message.content) > 20, do: "text-4xl", else: "text-5xl") <> " pb-8 text-center"}><%= message.content %></div>
               </div>
 
         <%= end %>
