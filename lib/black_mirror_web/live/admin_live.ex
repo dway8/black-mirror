@@ -24,24 +24,31 @@ defmodule BlackMirrorWeb.AdminLive do
         <div class="max-w-3xl">
         <.card>
           <h2 class="text-lg font-bold mb-5">Messages</h2>
-          <table class="table-auto mb-5">
+          <table class="table-auto mb-5 w-full">
             <thead>
               <tr>
                 <th class="border-b p-2 text-left font-semibold">Message</th>
                 <th class="border-b p-2 text-left font-semibold">Image</th>
                 <th class="border-b p-2 text-left font-semibold">Date d'ajout</th>
+                <th class="pl-3"></th>
               </tr>
             </thead>
             <tbody>
               <%= for message <- @messages do %>
-                <tr>
-                  <td class="border-b p-2 text-slate-400" style="white-space: pre-wrap;"><%= message.content %></td>
+                <tr id={"message-#{message.id}"} phx-remove={fade_out()}>
+                  <td class="w-2/5 border-b p-2 text-slate-400" style="white-space: pre-wrap;"><%= message.content %></td>
                   <td class="border-b p-2">
                     <%= if message.image do %>
                       <img alt="image" width="200" height="200" src={message.image} />
                     <% end %>
                   </td>
                   <td class="border-b p-2 text-slate-400 text-xs"><%= Timex.format!(message.inserted_at, "{WDfull} {D} {Mfull} {h24}:{m}") %>
+                  </td>
+
+                  <td class="pl-3 text-right">
+                    <button phx-click="delete_message" phx-value-id={message.id}>
+                      <.icon name="hero-trash" class=" text-red-600" />
+                    </button>
                   </td>
                 </tr>
               <% end %>
@@ -84,6 +91,14 @@ defmodule BlackMirrorWeb.AdminLive do
     """
   end
 
+  def fade_out() do
+    JS.hide(
+      transition:
+        {"transition-all transform ease-in duration-300", "opacity-100 scale-100",
+         "opacity-0 scale-95"}
+    )
+  end
+
   @impl true
   def handle_event("validate", %{"message" => params}, socket) do
     params = Map.put(params, "image", "")
@@ -110,14 +125,33 @@ defmodule BlackMirrorWeb.AdminLive do
     params = Map.put(params, "image", Enum.at(uploaded_files, 0))
 
     case Repo.insert(BlackMirror.Message.create_changeset(params)) do
-      {:error, message} ->
-        {:noreply, socket |> put_flash(:error, inspect(message))}
+      {:error, changeset} ->
+        {:noreply, socket |> put_flash(:error, inspect(changeset))}
 
       {:ok, _} ->
         {:noreply,
          socket
          |> assign(messages: Repo.all(BlackMirror.Message))
-         |> push_event("close_modal", %{to: "#close_modal_btn_message_modal"})}
+         |> push_event("close_modal", %{to: "#close_modal_btn_message_modal"})
+         |> put_flash(:info, "Message enregistré")}
+    end
+  end
+
+  @impl true
+  def handle_event("delete_message", params, socket) do
+    IO.puts("Deleting!")
+
+    case BlackMirror.Message.delete_by_id(Map.get(params, "id")) do
+      {:ok, _} ->
+        {:noreply,
+         socket
+         |> assign(messages: Repo.all(BlackMirror.Message))
+         |> put_flash(:info, "Message supprimé")}
+
+      {:error, changeset} ->
+        {:noreply,
+         socket
+         |> put_flash(:error, "Le message n'a pas pu être supprimé")}
     end
   end
 end

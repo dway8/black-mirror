@@ -1,5 +1,6 @@
 defmodule BlackMirror.Message do
   use Ecto.Schema
+  alias BlackMirror.Repo
   import Ecto.Changeset
   alias __MODULE__
 
@@ -13,5 +14,10 @@ defmodule BlackMirror.Message do
     changeset
     |> cast(attrs, [:content, :image])
     |> validate_required([:content])
+  end
+
+  def delete_by_id(id) do
+    message = Repo.get!(Message, id)
+    Repo.delete(message)
   end
 end

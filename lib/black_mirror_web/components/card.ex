@@ -5,7 +5,7 @@ defmodule BlackMirrorWeb.CardComponent do
 
   def card(assigns) do
     ~H"""
-      <div class="block bg-white rounded shadow-md p-4 border-gray-100"><%= render_slot(@inner_block) %></div>
+      <div class="block bg-white rounded shadow-md p-5 border-gray-100"><%= render_slot(@inner_block) %></div>
     """
   end
 end
