@@ -45,9 +45,9 @@ defmodule BlackMirrorWeb.AdminLive do
                   <td class="border-b p-2 text-slate-400 text-xs"><%= Timex.format!(message.inserted_at, "{WDfull} {D} {Mfull} {h24}:{m}") %>
                   </td>
 
-                  <td class="pl-3 text-right">
-                    <button phx-click="delete_message" phx-value-id={message.id}>
-                      <.icon name="hero-trash" class=" text-red-600" />
+                  <td class="pl-3 text-center">
+                    <button phx-click="delete_message" phx-value-id={message.id} class="inline-flex p-1 w-8 h-8 items-center justify-center hover:rounded-full hover:bg-red-600 hover:bg-opacity-10">
+                      <.icon name="hero-trash" class=" text-red-600 w-5 h-5" />
                     </button>
                   </td>
                 </tr>
