@@ -1,6 +1,5 @@
 defmodule BlackMirrorWeb.Admin.MessagesComponent do
   use Phoenix.LiveComponent
-  alias Phoenix.LiveView.JS
 
   use Phoenix.VerifiedRoutes,
     endpoint: BlackMirrorWeb.Endpoint,
@@ -9,6 +8,7 @@ defmodule BlackMirrorWeb.Admin.MessagesComponent do
 
   import BlackMirrorWeb.CardComponent
   import BlackMirrorWeb.CoreComponents
+  import BlackMirrorWeb.Common
   alias BlackMirror.Message
   alias BlackMirror.Repo
 
@@ -57,6 +57,7 @@ defmodule BlackMirrorWeb.Admin.MessagesComponent do
                   <button
                     phx-click="delete_message"
                     phx-value-id={message.id}
+                    phx-target={@myself}
                     class="inline-flex p-1 w-8 h-8 items-center justify-center hover:rounded-full hover:bg-red-600 hover:bg-opacity-10"
                   >
                     <.icon name="hero-trash" class=" text-red-600 w-5 h-5" />
@@ -149,8 +150,6 @@ defmodule BlackMirrorWeb.Admin.MessagesComponent do
 
   @impl true
   def handle_event("delete_message", params, socket) do
-    IO.puts("Deleting!")
-
     case BlackMirror.Message.delete_by_id(Map.get(params, "id")) do
       {:ok, _} ->
         {:noreply,
@@ -163,13 +162,5 @@ defmodule BlackMirrorWeb.Admin.MessagesComponent do
          socket
          |> put_flash(:error, "Le message n'a pas pu être supprimé")}
     end
-  end
-
-  def fade_out() do
-    JS.hide(
-      transition:
-        {"transition-all transform ease-in duration-300", "opacity-100 scale-100",
-         "opacity-0 scale-95"}
-    )
   end
 end
