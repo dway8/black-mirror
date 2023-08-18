@@ -13,6 +13,7 @@ defmodule BlackMirrorWeb.HomeLive do
 
   @type display :: :data | :message
 
+  @impl true
   def mount(_params, _session, socket) do
     start_tick()
 
@@ -117,9 +118,7 @@ defmodule BlackMirrorWeb.HomeLive do
         </div>
 
         <%= case @current_display do %>
-
           <% :data -> %>
-
             <div class="grid grid-cols-7 text-gray-500 font-bold text-3xl">
               <div class="col-span-4">MOIS EN COURS</div>
               <div class="col-span-1 w-0.5 self-stretch bg-white bg-opacity-70"></div>
@@ -127,20 +126,19 @@ defmodule BlackMirrorWeb.HomeLive do
             </div>
 
             <.live_component module={MyBrocanteComponent} id="mybrocante" , mybrocante={@mybrocante} />
-
           <% :message -> %>
             <% message = Enum.at(@messages, @current_message_idx) %>
-              <div class="flex items-center justify-center w-full flex-grow flex-col">
-                <div class={(if String.length(message.content) > 20, do: "text-4xl", else: "text-5xl") <> " pb-8 text-center"}><%= message.content %></div>
-                <%= if message.image do %>
+            <div class="flex items-center justify-center w-full flex-grow flex-col">
+              <div class={(if String.length(message.content) > 20, do: "text-4xl", else: "text-5xl") <> " pb-8 text-center"}>
+                <%= message.content %>
+              </div>
+              <%= if message.image do %>
                 <div>
                   <img alt="image" width="400" height="400" src={message.image} />
                 </div>
-                <% end %>
-              </div>
-
-        <%= end %>
-
+              <% end %>
+            </div>
+        <% end %>
       </div>
     </div>
     """
