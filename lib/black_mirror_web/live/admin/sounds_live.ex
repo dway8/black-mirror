@@ -109,7 +109,7 @@ defmodule BlackMirrorWeb.Admin.SoundsComponent do
 
   @impl true
   def handle_event("delete_sound", params, socket) do
-    sound = Repo.get!(Sound, params.id)
+    sound = Repo.get!(Sound, Map.get(params, "id"))
 
     case Repo.delete(sound) do
       {:ok, _} ->
