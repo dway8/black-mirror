@@ -1,5 +1,5 @@
 defmodule BlackMirrorWeb.Admin.MessagesComponent do
-  use Phoenix.LiveComponent
+  use BlackMirrorWeb, :live_component
 
   use Phoenix.VerifiedRoutes,
     endpoint: BlackMirrorWeb.Endpoint,

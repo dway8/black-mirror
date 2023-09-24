@@ -29,4 +29,8 @@ defmodule BlackMirrorWeb.AdminLive do
     </div>
     """
   end
+
+  def handle_info({:put_flash, type, message}, _params, socket) do
+    {:noreply, put_flash(socket, type, message)}
+  end
 end

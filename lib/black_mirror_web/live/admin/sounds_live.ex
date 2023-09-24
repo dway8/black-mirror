@@ -1,5 +1,5 @@
 defmodule BlackMirrorWeb.Admin.SoundsComponent do
-  use Phoenix.LiveComponent
+  use BlackMirrorWeb, :live_component
   import BlackMirrorWeb.CardComponent
   import BlackMirrorWeb.CoreComponents
   import BlackMirrorWeb.Common
@@ -36,7 +36,9 @@ defmodule BlackMirrorWeb.Admin.SoundsComponent do
                 <td class="w-2/5 border-b p-2 text-slate-400 text-sm">
                   <%= sound.url %>
                 </td>
-                <td class="border-b p-2"></td>
+                <td class="border-b p-2 w-32">
+                  <audio controls src={sound.url} class="" />
+                </td>
                 <td class="border-b p-2 text-slate-400"></td>
 
                 <td class="pl-3 text-center">
@@ -78,7 +80,7 @@ defmodule BlackMirrorWeb.Admin.SoundsComponent do
         <div class="relative w-full">
           <.input field={@form[:url]} type="text" placeholder="URL" class="w-full" />
         </div>
-        <.button phx-click="hide_form" class="bg-gray-400 hover:bg-gray-500">
+        <.button phx-click="hide_form" phx-target={@myself} class="bg-gray-400 hover:bg-gray-500">
           Annuler
         </.button>
         <.button class="bg-blue-600 hover:bg-blue-700" type="submit">Confirmer</.button>
@@ -93,17 +95,23 @@ defmodule BlackMirrorWeb.Admin.SoundsComponent do
   end
 
   @impl true
+  def handle_event("hide_form", _params, socket) do
+    {:noreply, socket |> assign(show_form: false)}
+  end
+
+  @impl true
   def handle_event("save_new_sound", %{"sound" => params}, socket) do
     case Repo.insert(BlackMirror.Sound.changeset(params)) do
-      {:error, changeset} ->
-        {:noreply, socket |> put_flash(:error, inspect(changeset))}
+      {:error, _} ->
+        {:noreply,
+         socket |> put_flash!(:error, "URL invalide. Formats acceptés : .mp3, .wav, .ogg")}
 
       {:ok, _} ->
         {:noreply,
          socket
          |> assign(sounds: Repo.all(BlackMirror.Sound))
          |> assign(show_form: false)
-         |> put_flash(:info, "Son enregistré")}
+         |> put_flash!(:info, "Son enregistré")}
     end
   end
 
@@ -116,12 +124,12 @@ defmodule BlackMirrorWeb.Admin.SoundsComponent do
         {:noreply,
          socket
          |> assign(sounds: Repo.all(BlackMirror.Sound))
-         |> put_flash(:info, "Son supprimé")}
+         |> put_flash!(:info, "Son supprimé")}
 
       {:error, _changeset} ->
         {:noreply,
          socket
-         |> put_flash(:error, "Le son n'a pas pu être supprimé")}
+         |> put_flash!(:error, "Le son n'a pas pu être supprimé")}
     end
   end
 end

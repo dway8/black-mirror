@@ -1,5 +1,5 @@
 defmodule MyBrocanteComponent do
-  use Phoenix.LiveComponent
+  use BlackMirrorWeb, :live_component
   require Logger
 
   @impl true

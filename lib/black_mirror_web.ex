@@ -54,6 +54,8 @@ defmodule BlackMirrorWeb do
       use Phoenix.LiveView,
         layout: {BlackMirrorWeb.Layouts, :app}
 
+      on_mount BlackMirrorWeb.Flash
+
       unquote(html_helpers())
     end
   end
@@ -61,6 +63,8 @@ defmodule BlackMirrorWeb do
   def live_component do
     quote do
       use Phoenix.LiveComponent
+
+      import BlackMirrorWeb.Flash, only: [put_flash!: 3]
 
       unquote(html_helpers())
     end
