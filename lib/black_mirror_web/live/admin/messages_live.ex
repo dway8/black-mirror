@@ -18,9 +18,13 @@ defmodule BlackMirrorWeb.Admin.MessagesComponent do
      socket
      |> assign(messages: assigns.messages)
      |> assign(show_message_modal: false)
-     |> assign(new_message_form: to_form(BlackMirror.Message.create_changeset(%{content: ""})))
+     |> assign(new_message_form: init_form())
      |> assign(:uploaded_files, [])
      |> allow_upload(:message_image, accept: ~w(.jpg .jpeg .png), max_entries: 1)}
+  end
+
+  def init_form do
+    to_form(BlackMirror.Message.create_changeset(%{content: ""}))
   end
 
   @impl true
@@ -99,7 +103,8 @@ defmodule BlackMirrorWeb.Admin.MessagesComponent do
               <div class="absolute right-0">
                 <.button
                   type="button"
-                  phx-click={hide_modal("message_modal")}
+                  phx-click="close_modal"
+                  phx-target={@myself}
                   class="bg-gray-400 hover:bg-gray-500"
                 >
                   Annuler
@@ -149,9 +154,16 @@ defmodule BlackMirrorWeb.Admin.MessagesComponent do
         {:noreply,
          socket
          |> assign(messages: Repo.all(BlackMirror.Message))
-         |> push_event("close_modal", %{to: "#close_modal_btn_message_modal"})
+         |> close_new_message_modal()
          |> put_flash(:info, "Message enregistré")}
     end
+  end
+
+  @impl true
+  def handle_event("close_modal", _params, socket) do
+    {:noreply,
+     socket
+     |> close_new_message_modal()}
   end
 
   @impl true
@@ -170,5 +182,11 @@ defmodule BlackMirrorWeb.Admin.MessagesComponent do
          socket
          |> put_flash(:error, "Le message n'a pas pu être supprimé")}
     end
+  end
+
+  defp close_new_message_modal(socket) do
+    socket
+    |> push_event("close_modal", %{to: "#close_modal_btn_message_modal"})
+    |> assign(new_message_form: init_form())
   end
 end
