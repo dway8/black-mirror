@@ -97,7 +97,11 @@ defmodule BlackMirrorWeb.Admin.MessagesComponent do
             </div>
             <div class="relative">
               <div class="absolute right-0">
-                <.button phx-click={hide_modal("message_modal")} class="bg-gray-400 hover:bg-gray-500">
+                <.button
+                  type="button"
+                  phx-click={hide_modal("message_modal")}
+                  class="bg-gray-400 hover:bg-gray-500"
+                >
                   Annuler
                 </.button>
                 <.button class="bg-blue-600 hover:bg-blue-700" type="submit">Confirmer</.button>

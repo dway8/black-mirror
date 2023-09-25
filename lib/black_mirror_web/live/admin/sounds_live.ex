@@ -80,7 +80,12 @@ defmodule BlackMirrorWeb.Admin.SoundsComponent do
         <div class="relative w-full">
           <.input field={@form[:url]} type="text" placeholder="URL" class="w-full" />
         </div>
-        <.button phx-click="hide_form" phx-target={@myself} class="bg-gray-400 hover:bg-gray-500">
+        <.button
+          type="button"
+          phx-click="hide_form"
+          phx-target={@myself}
+          class="bg-gray-400 hover:bg-gray-500"
+        >
           Annuler
         </.button>
         <.button class="bg-blue-600 hover:bg-blue-700" type="submit">Confirmer</.button>
