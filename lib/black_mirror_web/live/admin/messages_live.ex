@@ -139,7 +139,9 @@ defmodule BlackMirrorWeb.Admin.MessagesComponent do
       {:error, changeset} ->
         {:noreply, socket |> put_flash(:error, inspect(changeset))}
 
-      {:ok, _} ->
+      {:ok, new_message} ->
+        BlackMirror.Message.notify_subscribers({:ok, new_message}, [:message, :added])
+
         {:noreply,
          socket
          |> assign(messages: Repo.all(BlackMirror.Message))
@@ -151,7 +153,9 @@ defmodule BlackMirrorWeb.Admin.MessagesComponent do
   @impl true
   def handle_event("delete_message", params, socket) do
     case BlackMirror.Message.delete_by_id(Map.get(params, "id")) do
-      {:ok, _} ->
+      {:ok, deleted_message} ->
+        BlackMirror.Message.notify_subscribers({:ok, deleted_message.id}, [:message, :deleted])
+
         {:noreply,
          socket
          |> assign(messages: Repo.all(BlackMirror.Message))

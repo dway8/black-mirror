@@ -3,6 +3,7 @@ defmodule BlackMirrorWeb.HomeLive do
   require WeatherComponent
   require Logger
   alias BlackMirror.Repo
+  alias BlackMirror.Message
 
   @clock_update_interval 1000
   # refresh weather every hour
@@ -25,6 +26,10 @@ defmodule BlackMirrorWeb.HomeLive do
       |> init_messages()
       |> assign(current_display: :data)
       |> assign(current_message_idx: 0)
+
+    if connected?(socket) do
+      Message.subscribe()
+    end
 
     {:ok, socket}
   end
@@ -56,6 +61,22 @@ defmodule BlackMirrorWeb.HomeLive do
           {:noreply, assign(socket, current_message_idx: socket.assigns.current_message_idx + 1)}
         end
     end
+  end
+
+  def handle_info({BlackMirror.Message, [:message, :added], new_message}, socket) do
+    {:noreply,
+     socket
+     |> assign(messages: socket.assigns.messages ++ [new_message])}
+  end
+
+  def handle_info({BlackMirror.Message, [:message, :deleted], deleted_message_id}, socket) do
+    {:noreply,
+     socket
+     |> assign(
+       messages:
+         socket.assigns.messages
+         |> Enum.filter(fn m -> m.id != deleted_message_id end)
+     )}
   end
 
   defp update_date_and_time(socket) do
