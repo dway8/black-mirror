@@ -10,8 +10,12 @@ defmodule BlackMirror.MyBrocanteSalesTarget do
   end
 
   def get_current_year_sales_target() do
-    MyBrocanteSalesTarget
-    |> Repo.one(year: DateTime.utc_now().year)
-    |> Map.get(:amount)
+    target = MyBrocanteSalesTarget |> Repo.one(year: DateTime.utc_now().year)
+
+    if target do
+      target |> Map.get(:amount)
+    else
+      0
+    end
   end
 end
