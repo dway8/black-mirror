@@ -40,6 +40,13 @@ let liveSocket = new LiveSocket("/live", Socket, {
   },
 });
 
+window.addEventListener(`phx:trigger_sound`, (e) => {
+  const url = e.detail.url;
+  if (url) {
+    new Audio(url).play();
+  }
+});
+
 // Show progress bar on live navigation and form submits
 topbar.config({ barColors: { 0: "#29d" }, shadowColor: "rgba(0, 0, 0, .3)" });
 window.addEventListener("phx:page-loading-start", (_info) => topbar.show(300));

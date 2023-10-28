@@ -33,13 +33,24 @@ defmodule BlackMirrorWeb.Admin.SoundsComponent do
           <tbody>
             <%= for sound <- @sounds do %>
               <tr id={"sound-#{sound.id}"} phx-remove={fade_out()}>
-                <td class="w-2/5 border-b p-2 text-slate-400 text-sm">
+                <td
+                  class="w-2/5 border-b p-2 text-slate-400 text-sm break-all"
+                  style="min-width: 200px;"
+                >
                   <%= sound.url %>
                 </td>
                 <td class="border-b p-2 w-32">
-                  <audio controls src={sound.url} class="" />
+                  <audio controls src={sound.url} class="w-60 h-9" />
                 </td>
-                <td class="border-b p-2 text-slate-400"></td>
+                <td class="border-b p-2 text-slate-400">
+                  <.small_button
+                    phx-click="trigger_sound"
+                    phx-value-sound_url={sound.url}
+                    phx-target={@myself}
+                  >
+                    Déclencher
+                  </.small_button>
+                </td>
 
                 <td class="pl-3 text-center">
                   <button
@@ -136,5 +147,12 @@ defmodule BlackMirrorWeb.Admin.SoundsComponent do
          socket
          |> put_flash!(:error, "Le son n'a pas pu être supprimé")}
     end
+  end
+
+  @impl true
+  def handle_event("trigger_sound", params, socket) do
+    BlackMirror.Sound.notify_subscribers({:trigger, Map.get(params, "sound_url")})
+
+    {:noreply, socket}
   end
 end

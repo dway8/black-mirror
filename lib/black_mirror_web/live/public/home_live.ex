@@ -1,9 +1,10 @@
 defmodule BlackMirrorWeb.HomeLive do
+  alias BlackMirror.Repo
+  alias BlackMirror.Message
+  alias BlackMirror.Sound
   use BlackMirrorWeb, :live_view
   require WeatherComponent
   require Logger
-  alias BlackMirror.Repo
-  alias BlackMirror.Message
 
   @clock_update_interval 1000
   # refresh weather every hour
@@ -29,6 +30,7 @@ defmodule BlackMirrorWeb.HomeLive do
 
     if connected?(socket) do
       Message.subscribe()
+      Sound.subscribe()
     end
 
     {:ok, socket}
@@ -77,6 +79,10 @@ defmodule BlackMirrorWeb.HomeLive do
          socket.assigns.messages
          |> Enum.filter(fn m -> m.id != deleted_message_id end)
      )}
+  end
+
+  def handle_info({BlackMirror.Sound, :trigger_sound, sound_url}, socket) do
+    {:noreply, push_event(socket, "trigger_sound", %{url: sound_url})}
   end
 
   defp update_date_and_time(socket) do

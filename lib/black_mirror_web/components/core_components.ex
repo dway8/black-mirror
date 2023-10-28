@@ -240,6 +240,36 @@ defmodule BlackMirrorWeb.CoreComponents do
   end
 
   @doc """
+  Renders a small button.
+
+  ## Examples
+
+      <.small_button>Send!</.small_button>
+      <.small_button phx-click="go" class="ml-2">Send!</.small_button>
+  """
+  attr(:type, :string, default: nil)
+  attr(:class, :string, default: nil)
+  attr(:rest, :global, include: ~w(disabled form name value))
+
+  slot(:inner_block, required: true)
+
+  def small_button(assigns) do
+    ~H"""
+    <button
+      type={@type}
+      class={[
+        "phx-submit-loading:opacity-75 rounded-md bg-zinc-900 hover:bg-zinc-700 py-1 px-2",
+        "text-xs font-semibold leading-5 text-white active:text-white/80",
+        @class
+      ]}
+      {@rest}
+    >
+      <%= render_slot(@inner_block) %>
+    </button>
+    """
+  end
+
+  @doc """
   Renders an input with label and error messages.
 
   A `Phoenix.HTML.FormField` may be passed as argument,
