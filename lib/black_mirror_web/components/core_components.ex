@@ -219,6 +219,10 @@ defmodule BlackMirrorWeb.CoreComponents do
   """
   attr(:type, :string, default: nil)
   attr(:class, :string, default: nil)
+
+  attr(:color, :string, values: ["primary", "gray", "success", "warning", "danger"])
+  attr(:size, :string, default: "normal", values: ["normal", "small"])
+
   attr(:rest, :global, include: ~w(disabled form name value))
 
   slot(:inner_block, required: true)
@@ -227,41 +231,26 @@ defmodule BlackMirrorWeb.CoreComponents do
     ~H"""
     <button
       type={@type}
-      class={[
-        "phx-submit-loading:opacity-75 rounded-md bg-zinc-900 hover:bg-zinc-700 py-1 px-3",
-        "text-sm font-semibold leading-6 text-white active:text-white/80",
-        @class
-      ]}
-      {@rest}
-    >
-      <%= render_slot(@inner_block) %>
-    </button>
-    """
-  end
-
-  @doc """
-  Renders a small button.
-
-  ## Examples
-
-      <.small_button>Send!</.small_button>
-      <.small_button phx-click="go" class="ml-2">Send!</.small_button>
-  """
-  attr(:type, :string, default: nil)
-  attr(:class, :string, default: nil)
-  attr(:rest, :global, include: ~w(disabled form name value))
-
-  slot(:inner_block, required: true)
-
-  def small_button(assigns) do
-    ~H"""
-    <button
-      type={@type}
-      class={[
-        "phx-submit-loading:opacity-75 rounded-md bg-zinc-900 hover:bg-zinc-700 py-1 px-2",
-        "text-xs font-semibold leading-5 text-white active:text-white/80",
-        @class
-      ]}
+      class={
+        [
+          "phx-submit-loading:opacity-75 rounded-md",
+          "font-semibold  text-white active:text-white/80",
+          @class
+        ] ++
+          case @size do
+            "normal" -> ["py-1 px-3 leading-6 text-sm"]
+            "small" -> ["py-1 px-2 leading-5 text-xs"]
+            _ -> []
+          end ++
+          case @color do
+            "primary" -> ["bg-blue-500 hover:bg-blue-600"]
+            "gray" -> ["bg-gray-400 hover:bg-gray-500"]
+            "success" -> ["bg-green-500 hover:bg-green-600"]
+            "warning" -> ["bg-orange-500 hover:bg-orange-600"]
+            "danger" -> ["bg-red-500 hover:bg-red-600"]
+            _ -> []
+          end
+      }
       {@rest}
     >
       <%= render_slot(@inner_block) %>

@@ -71,7 +71,7 @@ defmodule BlackMirrorWeb.Admin.MessagesComponent do
             <% end %>
           </tbody>
         </table>
-        <.button phx-click={show_modal("message_modal")} class="bg-blue-600 hover:bg-blue-700">
+        <.button phx-click={show_modal("message_modal")} color="primary">
           Ajouter un message
         </.button>
       </.card>
@@ -101,15 +101,10 @@ defmodule BlackMirrorWeb.Admin.MessagesComponent do
             </div>
             <div class="relative">
               <div class="absolute right-0">
-                <.button
-                  type="button"
-                  phx-click="close_modal"
-                  phx-target={@myself}
-                  class="bg-gray-400 hover:bg-gray-500"
-                >
+                <.button type="button" phx-click="close_modal" phx-target={@myself} color="gray">
                   Annuler
                 </.button>
-                <.button class="bg-blue-600 hover:bg-blue-700" type="submit">Confirmer</.button>
+                <.button color="success" type="submit">Confirmer</.button>
               </div>
             </div>
           </.simple_form>

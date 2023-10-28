@@ -43,13 +43,15 @@ defmodule BlackMirrorWeb.Admin.SoundsComponent do
                   <audio controls src={sound.url} class="w-60 h-9" />
                 </td>
                 <td class="border-b p-2 text-slate-400">
-                  <.small_button
+                  <.button
                     phx-click="trigger_sound"
                     phx-value-sound_url={sound.url}
                     phx-target={@myself}
+                    size="small"
+                    color="primary"
                   >
                     Déclencher
-                  </.small_button>
+                  </.button>
                 </td>
 
                 <td class="pl-3 text-center">
@@ -78,7 +80,7 @@ defmodule BlackMirrorWeb.Admin.SoundsComponent do
 
   def add_sound_button(assigns) do
     ~H"""
-    <.button phx-click="show_form" phx-target={@myself} class="bg-blue-600 hover:bg-blue-700">
+    <.button phx-click="show_form" phx-target={@myself} color="primary">
       Ajouter un son
     </.button>
     """
@@ -91,15 +93,10 @@ defmodule BlackMirrorWeb.Admin.SoundsComponent do
         <div class="relative w-full">
           <.input field={@form[:url]} type="text" placeholder="URL" class="w-full" />
         </div>
-        <.button
-          type="button"
-          phx-click="hide_form"
-          phx-target={@myself}
-          class="bg-gray-400 hover:bg-gray-500"
-        >
+        <.button type="button" phx-click="hide_form" phx-target={@myself} color="gray">
           Annuler
         </.button>
-        <.button class="bg-blue-600 hover:bg-blue-700" type="submit">Confirmer</.button>
+        <.button color="success" type="submit">Confirmer</.button>
       </div>
     </.simple_form>
     """
