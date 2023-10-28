@@ -4,9 +4,25 @@
 
 /* This file is for your main application CSS */
 
+
 .myb-blue-color {
     color:  #00bede;
 }
 .myb-red-color {
     color:  #e62530;
 }
+
+.message-box {
+    /* position: absolute; */
+    right: 0;
+    transform: translateX(100%);
+  }
+  
+  @keyframes slide-in {
+    from {
+      transform: translateX(100%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }

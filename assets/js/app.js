@@ -30,6 +30,12 @@ const ModalCloser = {
   },
 };
 
+const MessageSlide = {
+  mounted() {
+    slideMessages(this.el);
+  },
+};
+
 let csrfToken = document
   .querySelector("meta[name='csrf-token']")
   .getAttribute("content");
@@ -37,6 +43,7 @@ let liveSocket = new LiveSocket("/live", Socket, {
   params: { _csrf_token: csrfToken },
   hooks: {
     ModalCloser: ModalCloser,
+    MessageSlide: MessageSlide,
   },
 });
 
@@ -46,6 +53,11 @@ window.addEventListener(`phx:trigger_sound`, (e) => {
     new Audio(url).play();
   }
 });
+
+const messageAnimationDuration = 1000; // Set the animation duration in milliseconds
+const slideMessages = (element) => {
+  element.style.animation = `slide-in ${messageAnimationDuration}ms ease-in-out forwards`;
+};
 
 // Show progress bar on live navigation and form submits
 topbar.config({ barColors: { 0: "#29d" }, shadowColor: "rgba(0, 0, 0, .3)" });

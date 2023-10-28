@@ -131,7 +131,7 @@ defmodule BlackMirrorWeb.HomeLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="bg-black antialiased text-white px-4 py-20 h-screen">
+    <div class="bg-black antialiased text-white px-4 py-20 h-screen overflow-hidden">
       <div class="space-y-8 mx-auto max-w-3xl h-full flex flex-col">
         <div class="columns-2">
           <div>
@@ -155,7 +155,12 @@ defmodule BlackMirrorWeb.HomeLive do
             <.live_component module={MyBrocanteComponent} id="mybrocante" , mybrocante={@mybrocante} />
           <% :message -> %>
             <% message = Enum.at(@messages, @current_message_idx) %>
-            <div class="flex items-center justify-center w-full flex-grow flex-col">
+            <div
+              class="flex items-center justify-center w-full flex-grow flex-col slide-in message-box"
+              phx-hook="MessageSlide"
+              id={"message#{@current_message_idx}"}
+              data-index={@current_message_idx}
+            >
               <div class={(if String.length(message.content) > 20, do: "text-4xl", else: "text-5xl") <> " pb-8 text-center"}>
                 <%= message.content %>
               </div>
