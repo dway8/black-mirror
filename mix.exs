@@ -51,7 +51,9 @@ defmodule BlackMirror.MixProject do
       {:jason, "~> 1.2"},
       {:plug_cowboy, "~> 2.5"},
       {:timex, "~> 3.7"},
-      {:httpoison, "~> 2.0"}
+      {:httpoison, "~> 2.0"},
+      {:ex_cldr, "~> 2.37"},
+      {:ex_cldr_numbers, "~> 2.32"}
     ]
   end
 

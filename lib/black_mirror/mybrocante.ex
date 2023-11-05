@@ -53,7 +53,7 @@ defmodule BlackMirror.MyBrocante do
       total_users: total_users,
       current_month_sales: current_month_sales,
       year_sales: year_sales,
-      sales_target_percent: if(year_target > 0, do: year_sales * 100 / year_target, else: 0)
+      sales_target_percent: if(year_target > 0, do: year_sales / year_target, else: 0)
     }
   end
 

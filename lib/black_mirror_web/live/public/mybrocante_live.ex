@@ -1,6 +1,7 @@
 defmodule MyBrocanteComponent do
   use BlackMirrorWeb, :live_component
   require Logger
+  alias BlackMirror.Cldr
 
   @impl true
   def render(assigns) do
@@ -12,15 +13,15 @@ defmodule MyBrocanteComponent do
         <div class="col-span-4 space-y-3">
           <div class="grid grid-cols-2">
             <div class="col-span-1 myb-red-color text-6xl font-bold">
-              +<%= @mybrocante.current_month_new_users %>
+              +<%= Cldr.Number.to_string!(@mybrocante.current_month_new_users) %>
             </div>
             <div class="col-span-1">
-              <div class="font-bold"><%= @mybrocante.total_users %></div>
+              <div class="font-bold"><%= Cldr.Number.to_string!(@mybrocante.total_users) %></div>
               <div class="text-gray-500">Clients</div>
             </div>
           </div>
           <div class="myb-blue-color text-6xl font-bold">
-            <%= div(@mybrocante.current_month_sales, 100) %> €
+            <%= Cldr.Number.to_string!(div(@mybrocante.current_month_sales, 100), currency: "EUR") %>
           </div>
         </div>
 
@@ -28,11 +29,17 @@ defmodule MyBrocanteComponent do
 
         <div class="col-span-2 space-y-3">
           <div>
-            <div class="font-bold"><%= div(@mybrocante.year_sales, 100) %> €</div>
+            <div class="font-bold">
+              <%= Cldr.Number.to_string!(div(@mybrocante.year_sales, 100), currency: "EUR") %>
+            </div>
             <div class="text-gray-500">Cumul CA</div>
           </div>
           <div>
-            <div class="font-bold"><%= @mybrocante.sales_target_percent |> Float.round(1) %> %</div>
+            <div class="font-bold">
+              <%= Cldr.Number.to_string!(@mybrocante.sales_target_percent,
+                format: :percent
+              ) %>
+            </div>
             <div class="text-gray-500">Objectif</div>
           </div>
         </div>
