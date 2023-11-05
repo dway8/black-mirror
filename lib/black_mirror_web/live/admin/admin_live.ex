@@ -3,6 +3,7 @@ defmodule BlackMirrorWeb.AdminLive do
   use BlackMirrorWeb, :live_view
   alias BlackMirror.Repo
   alias BlackMirrorWeb.Admin.MessagesComponent
+  import BlackMirrorWeb.CoreComponents
 
   @impl true
   def mount(_params, _session, socket) do
@@ -16,7 +17,14 @@ defmodule BlackMirrorWeb.AdminLive do
   def render(assigns) do
     ~H"""
     <div class="px-10 py-10 bg-gray-100 h-screen space-y-5">
-      <h1 class="text-2xl font-bold">Blackmirror Admin</h1>
+      <div>
+        <div class="float-right">
+          <a href="/" target="_blank">
+            <.icon name="hero-arrow-top-right-on-square" class="w-5 h-5" />
+          </a>
+        </div>
+        <h1 class="text-2xl font-bold">Blackmirror Admin</h1>
+      </div>
 
       <div class="flex flex-row space-x-8">
         <div class="basis-1/2">
