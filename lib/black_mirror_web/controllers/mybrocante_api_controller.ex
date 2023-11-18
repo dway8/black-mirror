@@ -7,6 +7,7 @@ defmodule BlackMirrorWeb.MyBrocanteAPIController do
 
     case MyBrocanteEvent.create_event(params) do
       {:ok, %MyBrocanteEvent{} = _event} ->
+        BlackMirror.MyBrocanteEvent.notify_subscribers(:events_updated)
         send_resp(conn, :ok, "")
 
       {:error, changeset} ->
@@ -29,6 +30,7 @@ defmodule BlackMirrorWeb.MyBrocanteAPIController do
 
     case MyBrocanteEvent.refresh_year_events(events_list) do
       {:ok, _} ->
+        BlackMirror.MyBrocanteEvent.notify_subscribers(:events_updated)
         send_resp(conn, :ok, "")
 
       {:error, _} ->

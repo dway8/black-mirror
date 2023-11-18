@@ -4,7 +4,10 @@ defmodule BlackMirror.MyBrocanteEvent do
   import Ecto.Changeset
   import Ecto.Query
   alias BlackMirror.Repo
+  alias Phoenix.PubSub
   alias __MODULE__
+
+  @topic inspect(__MODULE__)
 
   schema "mybrocante_events" do
     field(:customer_id, :integer)
@@ -62,5 +65,14 @@ defmodule BlackMirror.MyBrocanteEvent do
             add_error(changeset, :date, "could not convert timestamp to datetime: #{err}")
         end
     end
+  end
+
+  def subscribe do
+    PubSub.subscribe(BlackMirror.PubSub, @topic)
+  end
+
+  def notify_subscribers(:events_updated) do
+    PubSub.broadcast(BlackMirror.PubSub, @topic, {__MODULE__, :events_updated})
+    {:ok}
   end
 end

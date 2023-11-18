@@ -2,6 +2,7 @@ defmodule BlackMirrorWeb.HomeLive do
   alias BlackMirror.Repo
   alias BlackMirror.Message
   alias BlackMirror.Sound
+  alias BlackMirror.MyBrocanteEvent
   use BlackMirrorWeb, :live_view
   require WeatherComponent
   require Logger
@@ -31,6 +32,7 @@ defmodule BlackMirrorWeb.HomeLive do
     if connected?(socket) do
       Message.subscribe()
       Sound.subscribe()
+      MyBrocanteEvent.subscribe()
     end
 
     {:ok, socket}
@@ -83,6 +85,10 @@ defmodule BlackMirrorWeb.HomeLive do
 
   def handle_info({BlackMirror.Sound, :trigger_sound, sound_url}, socket) do
     {:noreply, push_event(socket, "trigger_sound", %{url: sound_url})}
+  end
+
+  def handle_info({BlackMirror.MyBrocanteEvent, :events_updated}, socket) do
+    {:noreply, socket |> init_mybrocante()}
   end
 
   defp update_date_and_time(socket) do
