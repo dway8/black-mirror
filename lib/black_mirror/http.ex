@@ -1,8 +1,5 @@
 defmodule BlackMirror.HTTP do
-  def get(url) do
-    case Finch.request(Finch.build(:get, url), BlackMirror.Finch) do
-      {:ok, resp} -> {:ok, resp}
-      _ -> :error
-    end
+  def get(url, headers \\ []) do
+    Finch.request(Finch.build(:get, url, headers), BlackMirror.Finch)
   end
 end

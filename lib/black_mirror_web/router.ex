@@ -30,6 +30,12 @@ defmodule BlackMirrorWeb.Router do
     post "/refresh", MyBrocanteAPIController, :refresh
   end
 
+  scope "/api/planexpo", BlackMirrorWeb do
+    pipe_through :api
+
+    get "/refresh", PlanexpoAPIController, :refresh
+  end
+
   # Enable LiveDashboard and Swoosh mailbox preview in development
   if(Application.compile_env(:black_mirror, :dev_routes)) do
     # If you want to use the LiveDashboard in production, you should put

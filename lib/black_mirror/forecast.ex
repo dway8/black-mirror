@@ -3,7 +3,7 @@ defmodule BlackMirror.Forecast do
 
   def fetch do
     Logger.info("[Forecast] Updating weather")
-    key = "58f1906f087041bc88a145330232506"
+    key = System.get_env("WEATHER_API_TOKEN")
     url = "http://api.weatherapi.com/v1/forecast.json?key=#{key}&q=Lyon"
 
     url
