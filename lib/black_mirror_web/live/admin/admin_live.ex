@@ -5,6 +5,8 @@ defmodule BlackMirrorWeb.AdminLive do
   alias BlackMirrorWeb.Admin.MessagesComponent
   import BlackMirrorWeb.CoreComponents
 
+  on_mount {BlackMirrorWeb.UserAuth, :ensure_authenticated_admin}
+
   @impl true
   def mount(_params, _session, socket) do
     {:ok,

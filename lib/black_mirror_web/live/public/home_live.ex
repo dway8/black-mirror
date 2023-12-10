@@ -4,6 +4,7 @@ defmodule BlackMirrorWeb.HomeLive do
   alias BlackMirror.Sound
   alias BlackMirror.MyBrocanteEvent
   use BlackMirrorWeb, :live_view
+  require BlackMirrorWeb.UserAuth
   require WeatherComponent
   require Logger
 
@@ -15,6 +16,8 @@ defmodule BlackMirrorWeb.HomeLive do
   @timezone "Europe/Paris"
 
   @type display :: :data | :message
+
+  on_mount {BlackMirrorWeb.UserAuth, :ensure_authenticated}
 
   @impl true
   def mount(_params, _session, socket) do

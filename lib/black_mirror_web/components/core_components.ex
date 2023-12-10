@@ -220,7 +220,11 @@ defmodule BlackMirrorWeb.CoreComponents do
   attr(:type, :string, default: nil)
   attr(:class, :string, default: nil)
 
-  attr(:color, :string, values: ["primary", "gray", "success", "warning", "danger"])
+  attr(:color, :string,
+    values: ["primary", "gray", "success", "warning", "danger"],
+    default: "primary"
+  )
+
   attr(:size, :string, default: "normal", values: ["normal", "small"])
 
   attr(:rest, :global, include: ~w(disabled form name value))
