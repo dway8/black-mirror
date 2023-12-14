@@ -12,7 +12,7 @@
     </script>
   </head>
   <body>
-    <%= if !@current_user do %>
+    <%!-- <%= if !@current_user do %>
       <ul class="relative z-10 flex items-center gap-4 px-4 sm:px-6 lg:px-8 justify-end">
         <li>
           <.link
@@ -23,7 +23,7 @@
           </.link>
         </li>
       </ul>
-    <% end %>
+    <% end %> --%>
     <%= @inner_content %>
   </body>
 </html>

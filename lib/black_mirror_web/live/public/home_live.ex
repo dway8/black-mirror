@@ -17,7 +17,8 @@ defmodule BlackMirrorWeb.HomeLive do
 
   @type display :: :data | :message
 
-  on_mount {BlackMirrorWeb.UserAuth, :ensure_authenticated}
+  # Disable auth for now for home page (raspberry will have to be autologged in by another way)
+  on_mount {BlackMirrorWeb.UserAuth, :mount_current_user}
 
   @impl true
   def mount(_params, _session, socket) do
